@@ -39,12 +39,17 @@ function cleanTitle(t) {
   return (t || "")
     .replace(/^friends?\s*[-–—:]\s*/i, "")
     .replace(/^\d{1,4}\s*[-–—]\s*/, "")
+    .replace(/^\d{1,2}\.\d{1,2}\s*[-–—]?\s*/, "")   // "10.08 The One…" 点号前缀
     .replace(/\s+/g, " ")
     .trim();
 }
 function goodTitle(t) {
   const c = cleanTitle((t || "").replace(/<[^>]+>/g, ""));
-  return c && !/^untitled/i.test(c) ? c : null;
+  if (!c || /^untitled/i.test(c) || /^friends?$/i.test(c)) return null;
+  if (c === c.toUpperCase() && c.length > 10) {
+    return c.toLowerCase().replace(/(^|[\s'\-])([a-z])/g, (_, p, ch) => p + ch.toUpperCase()); // 全大写标题转 Title Case
+  }
+  return c;
 }
 
 let FALLBACK = {};
@@ -69,31 +74,48 @@ function parseEpisode(file) {
   return { s: season, e: ep, t: title, lines: parseBody(html) };
 }
 
-function parseBody(html) {
+/* 规范化：strong→b、冒号收进标签内，统一后续匹配 */
+function normalize(html) {
+  return html
+    .replace(/<(\/?)strong>/gi, "<$1b>")
+    .replace(/(<b>)([^<]{1,28}?)(<\/b>)\s*:/g, "$1$2:$3");
+}
+
+const SPEAKER_RE = /^(?:<[^>]+>)*<b>([^<]{1,28}):\s*<\/b>([\s\S]*)$/i;
+const PLAIN_RE = /^([A-Z][A-Za-z&.'\- ]{1,28}):\s+([\s\S]+)$/;
+
+function parseBody(htmlRaw) {
   const lines = [];
+  const html = normalize(htmlRaw).replace(/<head[\s\S]*?<\/head>/gi, "");
   const paras = html.match(/<p[^>]*>[\s\S]*?<\/p>/gi) || [];
-  for (const para of paras) {
-    let inner = para.replace(/^<p[^>]*>/i, "").replace(/<\/p>$/i, "");
+  const chunks = paras.length >= 10
+    ? paras
+    : html.split(/<br\s*\/?>|\n/gi);   // <br> 分段的老文件（S9E11/E15 风格）
 
-    // 场景标记
-    const plain = decode(inner.replace(/<[^>]+>/g, "")).trim();
-    if (/^\[Scene:/i.test(plain)) {
-      lines.push({ k: "scene", t: plain });
-      continue;
-    }
+  for (const chunk of chunks) {
+    const text = decode(chunk.replace(/<[^>]+>/g, "")).replace(/\s+/g, " ").trim();
+    if (!text) continue;
 
-    // 对白：<b>Speaker:</b> 或 <strong>Speaker:</strong>（S1E12 起两种混用）
-    const m = inner.match(/^((?:<[^>]+>)*)(<b>|<strong>|<font[^>]*><b>|<font[^>]*><strong>)([^<]{1,28}):\s*<\/(b|strong)>([\s\S]*)$/i);
+    if (/^\[Scene:/i.test(text)) { lines.push({ k: "scene", t: text }); continue; }
+
+    const m = chunk.match(SPEAKER_RE);
     if (m) {
-      const who = decode(m[3]).trim();
-      const parts = tokenize(m[5]);
-      lines.push({ k: "line", w: who, p: parts });
+      let who = decode(m[1]).trim();
+      if (who === who.toUpperCase() && /[A-Z]{2}/.test(who)) {
+        who = who.replace(/[A-Z]+/g, (w) => w[0] + w.slice(1).toLowerCase()); // RACHEL → Rachel
+      }
+      lines.push({ k: "line", w: who, p: tokenize(m[2]) });
       continue;
     }
-
-    // 其他注释（编剧、转录者、舞台指示等）
-    const text = decode(inner.replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim();
-    if (text) lines.push({ k: "note", t: text });
+    // 纯文本说话人（S2 风格：RACHEL: ...，无任何标签）
+    const pm = text.match(PLAIN_RE);
+    if (pm && !/^(http|www)/i.test(pm[1])) {
+      let who = pm[1].trim();
+      if (who === who.toUpperCase()) who = who.replace(/[A-Z]+/g, (w) => w[0] + w.slice(1).toLowerCase());
+      lines.push({ k: "line", w: who, p: [[pm[2].trim()]] });
+      continue;
+    }
+    if (text.length > 1) lines.push({ k: "note", t: text });
   }
   return lines;
 }

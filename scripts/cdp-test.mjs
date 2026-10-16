@@ -125,14 +125,31 @@ const complexBits = await evalJs(`['.en','.sec .bars','.cross','[data-lw]'].map(
 check("复杂模式区块（英文释义/词频条/交叉信息/变形chips）", !complexBits.includes("0/0/0/0") || true, complexBits);
 await shot("D:/workspace/cdp_tip_complex.png");
 
-/* ── 5. 后期季：方块与人名 ── */
-await goto(`${BASE}/#s7e1`);
+/* ── 5. S10E1：此前 0 对白的重灾区 ── */
+await goto(`${BASE}/#s10e1`);
 await sleep(1500);
-check("S7E1 无控制字符/方块", await evalJs(`/[\\u0080-\\u009F\\uFFFD]/.test(document.querySelector('.script').textContent)`) === false);
-check("S7E1 智能引号已修复", await evalJs(`/[\\u2018\\u2019]/.test(document.querySelector('.script').textContent)`) === true);
-const colored7 = await evalJs(`[...document.querySelectorAll('.who')].filter(w=>!w.classList.contains('c-other')).length`);
-check("S7E1 六人（含变体）配色", colored7 > 100, `${colored7} 个`);
-await shot("D:/workspace/cdp_s7e1.png");
+check("S10E1 打开且有台词", await evalJs("document.querySelectorAll('.ln').length") > 100);
+const colored10 = await evalJs(`[...document.querySelectorAll('.who')].filter(w=>!w.classList.contains('c-other')).length`);
+check("S10E1 人名高亮", colored10 > 200, `${colored10} 个`);
+const wrap10 = await evalJs("document.querySelectorAll('.ln .w').length");
+check("S10E1 单词识别", wrap10 > 2000, `${wrap10} 个`);
+await evalJs(`(()=>{const w=[...document.querySelectorAll('.ln .w')].find(e=>e.dataset.w==='pregnant')||[...document.querySelectorAll('.ln .w')].find(e=>e.dataset.w==='crushed');const r=w.getBoundingClientRect();w.dispatchEvent(new MouseEvent('mouseover',{bubbles:true,clientX:r.left+30,clientY:r.top+5}));return w.dataset.w;})()`);
+await sleep(2500);
+check("S10E1 悬浮查词", await evalJs("document.getElementById('tip').classList.contains('show')"));
+await evalJs(`(()=>{const w=[...document.querySelectorAll('.ln .w')].find(e=>/^(you|get|know)$/.test(e.dataset.w));if(!w) return 'noword';const r=w.getBoundingClientRect();w.dispatchEvent(new MouseEvent('mouseover',{bubbles:true,clientX:r.left+30,clientY:r.top+5}));return 'ok';})()`);
+await sleep(600);
+const chipText = await evalJs("document.getElementById('tip').textContent");
+check("简单词不再显示中考/高考标签", !/中考|高考/.test(chipText));
+await shot("D:/workspace/cdp_s10e1.png");
+
+/* ── 6. S9E11（<br> 分段格式）── */
+await goto(`${BASE}/#s9e11`);
+await sleep(1500);
+check("S9E11 打开且有台词", await evalJs("document.querySelectorAll('.ln').length") > 100);
+check("S9E11 无控制字符", await evalJs(`/[\\u0080-\\u009F\\uFFFD]/.test(document.querySelector('.script').textContent)`) === false);
+const colored9 = await evalJs(`[...document.querySelectorAll('.who')].filter(w=>!w.classList.contains('c-other')).length`);
+check("S9E11 人名高亮", colored9 > 150, `${colored9} 个`);
+await shot("D:/workspace/cdp_s9e11.png");
 
 console.log("\n==== 结果:", results.filter(r => r[1]).length + "/" + results.length, "通过 ====");
 proc.kill();
