@@ -23,18 +23,37 @@ const decode = (s) =>
 // 台词本用 iso-8859-1 编码
 const readLatin1 = (f) => readFileSync(f, "latin1");
 
+// 标题清洗：去掉 "Friends - " / "FRIENDS - " / "1001 - " 之类前缀
+function cleanTitle(t) {
+  return (t || "")
+    .replace(/^friends?\s*[-–—:]\s*/i, "")
+    .replace(/^\d{1,4}\s*[-–—]\s*/, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+function goodTitle(t) {
+  const c = cleanTitle((t || "").replace(/<[^>]+>/g, ""));
+  return c && !/^untitled/i.test(c) ? c : null;
+}
+
+let FALLBACK = {};
+try { FALLBACK = JSON.parse(readFileSync(join(ROOT, "scripts", "titles-fallback.json"), "utf8")); } catch {}
+
 function parseEpisode(file) {
   const html = readLatin1(join(SRC, file));
-  const m = file.replace(".html", "").match(/^(\d{2})(\d{2})(?:-(\d{2})(\d{2}))?(uncut)?$/);
+  const code = file.replace(/\.html$/, "");
+  const m = code.match(/^(\d{2})(\d{2})(?:-(\d{2})(\d{2}))?(uncut)?$/);
   if (!m && file === "07outtakes.html") {
-    // S7 花絮特辑
-    return { s: 7, e: "OT", t: "Outtakes & Bloopers", lines: parseBody(html) };
+    return { s: 7, e: "OT", t: goodTitle(html.match(/<title>([\s\S]*?)<\/title>/i)?.[1]) || "The Stuff You've Never Seen", lines: parseBody(html) };
   }
   if (!m) return null;
   const season = +m[1];
   const ep = m[3] ? `${+m[2]}-${+m[4]}` : +m[2];
-  const titleMatch = html.match(/<title>([\s\S]*?)<\/title>/i);
-  let title = decode((titleMatch ? titleMatch[1] : "").trim()).replace(/\s+/g, " ");
+  let title =
+    goodTitle(html.match(/<title>([\s\S]*?)<\/title>/i)?.[1]) ||
+    goodTitle(html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)?.[1]) ||
+    cleanTitle(FALLBACK[code]) ||
+    `Episode ${ep}`;
   if (m[5]) title += " (Uncut)";
   return { s: season, e: ep, t: title, lines: parseBody(html) };
 }
@@ -52,11 +71,11 @@ function parseBody(html) {
       continue;
     }
 
-    // 对白：<b>Speaker:</b> rest
-    const m = inner.match(/^((?:<[^>]+>)*)(<b>|<font[^>]*><b>)([^<]{1,28}):\s*<\/b>([\s\S]*)$/i);
+    // 对白：<b>Speaker:</b> 或 <strong>Speaker:</strong>（S1E12 起两种混用）
+    const m = inner.match(/^((?:<[^>]+>)*)(<b>|<strong>|<font[^>]*><b>|<font[^>]*><strong>)([^<]{1,28}):\s*<\/(b|strong)>([\s\S]*)$/i);
     if (m) {
       const who = decode(m[3]).trim();
-      const parts = tokenize(m[4]);
+      const parts = tokenize(m[5]);
       lines.push({ k: "line", w: who, p: parts });
       continue;
     }

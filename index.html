@@ -142,6 +142,33 @@
   .c-ross{color:var(--c-ross)}.c-chandler{color:var(--c-chandler)}.c-joey{color:var(--c-joey)}
   .c-other{color:var(--c-other)}
 
+  /* ───── 悬浮词典 ───── */
+  body.dict-on .ln .w{border-bottom:1px dotted color-mix(in srgb,currentColor 45%,transparent);cursor:help}
+  #tip{
+    position:fixed;z-index:90;max-width:340px;min-width:220px;
+    background:var(--panel);border:1px solid var(--line);border-radius:13px;
+    box-shadow:0 22px 55px -18px rgba(50,30,10,.5),0 4px 14px -6px rgba(50,30,10,.25);
+    padding:15px 17px 13px;pointer-events:none;opacity:0;transform:translateY(5px);
+    transition:opacity .16s ease,transform .16s ease;font-family:var(--sans);
+  }
+  #tip.show{opacity:1;transform:none}
+  [data-theme="dark"] #tip{box-shadow:0 22px 55px -14px rgba(0,0,0,.8)}
+  #tip .tw{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+  #tip .tw b{font-family:var(--serif);font-size:19px;font-weight:700}
+  #tip .tw .ph{font-family:var(--mono);font-size:12px;color:var(--accent)}
+  #tip .lemma-badge{font-size:11px;color:var(--accent);border:1px solid var(--accent);border-radius:99px;padding:1px 9px}
+  #tip .chips{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0 2px}
+  #tip .chip{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;border-radius:5px;padding:2px 7px;
+    background:var(--accent-soft);color:var(--accent)}
+  #tip .chip.lvl{background:transparent;border:1px solid var(--line);color:var(--faint)}
+  #tip .tr{margin-top:9px;font-size:13.5px;line-height:1.7;color:var(--ink);white-space:pre-line}
+  #tip .tr i{font-style:normal;color:var(--dim)}
+  #tip .en{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);
+    font-size:12px;line-height:1.6;color:var(--dim);font-style:italic;white-space:pre-line}
+  #tip .forms{margin-top:8px;font-family:var(--mono);font-size:11px;color:var(--faint)}
+  #tip .forms b{color:var(--dim);font-weight:400}
+  #tip .loading{font-size:13px;color:var(--dim)}
+
   /* 响应式 */
   @media (max-width:900px){
     .layout{grid-template-columns:1fr}
@@ -168,6 +195,7 @@
     <span class="shint">/</span>
   </div>
   <div class="tools">
+    <button class="tbtn" id="dict-toggle" title="悬浮查词开关">词 ON</button>
     <button class="tbtn" id="fz-dec" title="缩小字号">A-</button>
     <button class="tbtn" id="fz-inc" title="放大字号">A+</button>
     <button class="tbtn" id="theme" title="切换明暗">☾</button>
@@ -186,7 +214,7 @@
         <div class="stat"><b id="stat-lines">44,784</b><span>DIALOGUES</span></div>
         <div class="stat"><b id="stat-words">882,995</b><span>WORDS</span></div>
       </div>
-      <p class="hint">按 <kbd>/</kbd> 聚焦搜索 · <kbd>←</kbd><kbd>→</kbd> 上下集 · 六人名字各有专属配色</p>
+      <p class="hint">悬停任意单词看中英释义（ECDICT 词库）· <kbd>/</kbd> 搜索台词 · <kbd>←</kbd><kbd>→</kbd> 上下集 · 六人名字专属配色</p>
       <div class="season-grid" id="season-grid"></div>
     </div>
   </main>
@@ -268,12 +296,24 @@
   }
 
   /* ── 阅读器 ── */
+  // 单词包裹：把文本按英文单词切开，逐段转义，词包成 .w（始终包裹；开关只控制样式与悬浮行为）
+  const WRE = /[A-Za-z][A-Za-z'-]*/g;
+  function wordify(text) {
+    let out = "", last = 0;
+    for (const m of text.matchAll(WRE)) {
+      out += esc(text.slice(last, m.index));
+      out += `<span class="w" data-w="${m[0].toLowerCase()}">${esc(m[0])}</span>`;
+      last = m.index + m[0].length;
+    }
+    return out + esc(text.slice(last));
+  }
+
   function renderScript(ep) {
     return ep.lines.map((l, idx) => {
       if (l.k === "scene") return `<p class="ln scene" data-i="${idx}">${esc(l.t)}</p>`;
       if (l.k === "note") return `<p class="ln note" data-i="${idx}">${esc(l.t)}</p>`;
       const who = `<span class="who ${whoClass(l.w)}">${esc(l.w)}:</span> `;
-      const body = l.p.map((seg) => seg[1] ? `<span class="u">${esc(seg[0])}</span>` : esc(seg[0])).join(" ");
+      const body = l.p.map((seg) => seg[1] ? `<span class="u">${wordify(seg[0])}</span>` : wordify(seg[0])).join(" ");
       return `<p class="ln" data-i="${idx}">${who}${body}</p>`;
     }).join("\n");
   }
@@ -376,6 +416,98 @@
         openByI(i, +el.dataset.li);
       }));
   }
+
+  /* ── 悬浮词典（ECDICT）── */
+  let DICT_ON = localStorage.getItem("fs_dict") !== "0";   // 默认开启
+  let DICT = null, dictLoading = null;
+  const tip = document.createElement("div");
+  tip.id = "tip"; document.body.appendChild(tip);
+
+  function applyDict() {
+    document.body.classList.toggle("dict-on", DICT_ON);
+    $("#dict-toggle").textContent = DICT_ON ? "词 ON" : "词 OFF";
+    if (!DICT_ON) hideTip();
+  }
+  applyDict();
+  $("#dict-toggle").addEventListener("click", () => {
+    DICT_ON = !DICT_ON;
+    localStorage.setItem("fs_dict", DICT_ON ? "1" : "0");
+    applyDict();
+  });
+
+  const TAGS = { zk:"中考", gk:"高考", cet4:"CET-4", cet6:"CET-6", ky:"考研", ielts:"雅思", toefl:"TOEFL", gre:"GRE" };
+  function lookup(w) {
+    if (!DICT) return null;
+    let e = DICT.d[w], lemmaBadge = "";
+    if (!e && DICT.l[w]) { const [base, rel] = DICT.l[w]; e = DICT.d[base]; if (e) lemmaBadge = `${base} 的${rel}`; }
+    if (!e && /'s$/.test(w)) { e = DICT.d[w.replace(/'s$/, "")]; if (e) lemmaBadge = `${w.replace(/'s$/, "")} 的所有格`; }
+    return e ? { e, lemmaBadge } : null;
+  }
+
+  function showTip(el, x, y) {
+    const w = el.dataset.w;
+    if (!DICT) {
+      if (!dictLoading) dictLoading = fetch("data/dict.json").then((r) => r.json()).then((j) => { DICT = j; });
+      tip.innerHTML = `<div class="loading">词库载入中…（首次约 4MB，之后有缓存）</div>`;
+      placeTip(x, y);
+      dictLoading.then(() => { if (tip.classList.contains("show")) renderTip(el, x, y); });
+      return;
+    }
+    renderTip(el, x, y);
+  }
+
+  function renderTip(el, x, y) {
+    const w = el.dataset.w;
+    const hit = lookup(w);
+    if (!hit) { hideTip(); return; }
+    const [ph, def, tr, pos, collins, oxford, tag, bnc, frq, ex] = hit.e;
+    const chips = [];
+    if (hit.lemmaBadge) chips.push(`<span class="chip">${hit.lemmaBadge}</span>`);
+    if (collins) chips.push(`<span class="chip">${"★".repeat(Math.min(collins, 5))}</span>`);
+    if (oxford) chips.push(`<span class="chip">牛津3000</span>`);
+    for (const t of tag.split(" ")) if (TAGS[t]) chips.push(`<span class="chip">${TAGS[t]}</span>`);
+    if (bnc) chips.push(`<span class="chip lvl">BNC ${bnc}</span>`);
+    if (frq) chips.push(`<span class="chip lvl">COCA ${frq}</span>`);
+    const forms = ex ? ex.split("/").filter((p) => /^[a-z]+:/i.test(p)).map((p) => p.replace(/^[a-z0-9]+:/i, "")).join(" · ") : "";
+    tip.innerHTML = `
+      <div class="tw"><b>${esc(el.textContent)}</b>${ph ? `<span class="ph">/${esc(ph)}/</span>` : ""}</div>
+      ${chips.length ? `<div class="chips">${chips.join("")}</div>` : ""}
+      ${tr ? `<div class="tr">${esc(tr).split("\n").slice(0, 6).join("\n")}${tr.split("\n").length > 6 ? "\n…" : ""}</div>` : ""}
+      ${def ? `<div class="en">${esc(def).split("\n").slice(0, 3).join("\n")}${def.split("\n").length > 3 ? "\n…" : ""}</div>` : ""}
+      ${forms ? `<div class="forms"><b>变形</b> ${esc(forms)}</div>` : ""}`;
+    placeTip(x, y);
+  }
+
+  function placeTip(x, y) {
+    tip.classList.add("show");
+    const r = tip.getBoundingClientRect();
+    let tx = x + 16, ty = y + 18;
+    if (tx + r.width > innerWidth - 12) tx = x - r.width - 14;
+    if (ty + r.height > innerHeight - 12) ty = Math.max(10, y - r.height - 14);
+    tip.style.left = Math.max(10, tx) + "px";
+    tip.style.top = ty + "px";
+  }
+  function hideTip() { tip.classList.remove("show"); }
+
+  main.addEventListener("mouseover", (e) => {
+    if (!DICT_ON) return;
+    const el = e.target.closest(".ln .w");
+    if (el) showTip(el, e.clientX, e.clientY);
+  });
+  main.addEventListener("mouseout", (e) => {
+    if (e.target.closest(".ln .w")) hideTip();
+  });
+  main.addEventListener("mousemove", (e) => {
+    const el = e.target.closest(".ln .w");
+    if (DICT_ON && el && tip.classList.contains("show")) placeTip(e.clientX, e.clientY);
+  }, { passive: true });
+  // 触屏：点词显示/隐藏
+  main.addEventListener("click", (e) => {
+    if (!DICT_ON) return;
+    const el = e.target.closest(".ln .w");
+    if (el) { e.preventDefault(); showTip(el, e.clientX, e.clientY); }
+  });
+  addEventListener("scroll", hideTip, { passive: true });
 
   /* ── 键盘 ── */
   addEventListener("keydown", (e) => {
