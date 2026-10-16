@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>老友记台词库 · Friends Scripts</title>
-<meta name="description" content="老友记十季 228 集全台词：搜索、阅读、角色配色。日常英语学习工具。">
+<meta name="description" content="老友记十季 228 集全台词：搜索、阅读、角色配色、ECDICT 悬浮词典。日常英语学习工具。">
 <meta name="theme-color" content="#faf6ef">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23c9722e'/%3E%3Ctext x='32' y='42' font-size='28' text-anchor='middle' fill='%23faf6ef' font-family='Georgia,serif' font-weight='bold'%3EF%3C/text%3E%3Ccircle cx='46' cy='18' r='6' fill='%23faf6ef' opacity='.35'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23c9722e'/%3E%3Cpath d='M20 34h18v8a8 8 0 0 1-8 8h-2a8 8 0 0 1-8-8z' fill='%23faf6ef'/%3E%3Cpath d='M38 36h4a5 5 0 0 1 0 10h-4' fill='none' stroke='%23faf6ef' stroke-width='3'/%3E%3Cpath d='M25 28c0-2 3-2 3-4M32 28c0-2 3-2 3-4' stroke='%23faf6ef' stroke-width='2.2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
 <style>
   :root{
     --bg:#faf6ef; --bg2:#f3ecdf; --panel:#fffdf8;
@@ -16,6 +16,7 @@
     --c-monica:#b45309; --c-rachel:#0e7490; --c-phoebe:#7c3aed;
     --c-ross:#1d4ed8; --c-chandler:#047857; --c-joey:#be185d;
     --c-other:#8d7d6b; --uncut:#1d4ed8;
+    --yellow:#e0a92f; --door:#7d64ad; --leaf:#4d8a5a;
     --serif:Georgia,"Palatino Linotype","Songti SC",SimSun,serif;
     --mono:"Cascadia Code",Consolas,Menlo,monospace;
     --sans:"Segoe UI","PingFang SC","Microsoft YaHei UI",sans-serif;
@@ -28,6 +29,7 @@
     --c-monica:#f59e0b; --c-rachel:#22d3ee; --c-phoebe:#a78bfa;
     --c-ross:#60a5fa; --c-chandler:#34d399; --c-joey:#f472b6;
     --c-other:#b0a08c; --uncut:#93c5fd;
+    --yellow:#e6b64c; --door:#9a83c9; --leaf:#6db87b;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
@@ -39,14 +41,15 @@
   /* ───── 顶栏 ───── */
   .topbar{
     position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;
-    padding:12px clamp(14px,3vw,28px);
-    background:color-mix(in srgb,var(--bg) 88%,transparent);
+    padding:11px clamp(14px,3vw,28px);
+    background:color-mix(in srgb,var(--bg) 90%,transparent);
     border-bottom:1px solid var(--line);
   }
-  .brand{display:flex;align-items:baseline;gap:10px;white-space:nowrap}
-  .brand b{font-family:var(--serif);font-size:19px;font-weight:700;letter-spacing:.02em}
-  .brand b i{font-style:normal;color:var(--accent)}
-  .brand span{font-family:var(--mono);font-size:10.5px;color:var(--faint);letter-spacing:.18em}
+  .brand{display:flex;align-items:center;gap:9px;white-space:nowrap}
+  .brand .cup{flex:none;width:26px;height:26px;color:var(--accent)}
+  .brand .bt b{display:block;font-family:var(--serif);font-size:16.5px;font-weight:700;line-height:1.25}
+  .brand .bt b i{font-style:normal;color:var(--accent)}
+  .brand .bt span{font-family:var(--mono);font-size:9px;color:var(--faint);letter-spacing:.2em}
   .searchbox{flex:1;max-width:520px;display:flex;align-items:center;gap:9px;
     background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:7px 13px;transition:border-color .2s}
   .searchbox:focus-within{border-color:var(--accent)}
@@ -56,18 +59,19 @@
   .searchbox .shint{font-family:var(--mono);font-size:10px;color:var(--faint);border:1px solid var(--line);border-radius:4px;padding:1px 6px}
   .tools{display:flex;gap:8px;margin-left:auto}
   .tbtn{background:var(--panel);border:1px solid var(--line);border-radius:8px;color:var(--dim);
-    font-size:13px;padding:6px 11px;transition:.2s;font-family:var(--sans)}
+    font-size:12.5px;padding:6px 10px;transition:.2s;font-family:var(--sans)}
   .tbtn:hover{border-color:var(--accent);color:var(--ink)}
+  .tbtn.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
 
   /* ───── 布局 ───── */
-  .layout{display:grid;grid-template-columns:270px 1fr;min-height:calc(100vh - 58px)}
+  .layout{display:grid;grid-template-columns:272px 1fr;min-height:calc(100vh - 56px)}
   .sidebar{border-right:1px solid var(--line);background:var(--bg2);
-    overflow-y:auto;height:calc(100vh - 58px);position:sticky;top:58px;padding:14px 10px 30px}
+    overflow-y:auto;height:calc(100vh - 56px);position:sticky;top:56px;padding:14px 10px 30px}
   .season-block{margin-bottom:4px}
   .season-head{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;
     font-family:var(--sans);font-size:13px;font-weight:600;color:var(--dim);cursor:pointer;user-select:none;transition:.2s}
   .season-head:hover{background:var(--accent-soft);color:var(--ink)}
-  .season-head .n{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.1em}
+  .season-head .dot{width:9px;height:9px;border-radius:50%;flex:none}
   .season-head .cnt{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--faint)}
   .season-head .tri{transition:transform .25s;font-size:10px;color:var(--faint)}
   .season-block.open .tri{transform:rotate(90deg)}
@@ -81,31 +85,51 @@
   .ep .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
   /* ───── 主区 ───── */
-  .main{min-width:0;padding:0 clamp(16px,4vw,56px) 90px}
-  .landing{max-width:760px;margin:0 auto;padding:clamp(28px,6vh,64px) 0 40px;text-align:center}
-  .landing .cover{width:min(300px,70vw);border-radius:14px;box-shadow:0 30px 70px -30px rgba(60,35,10,.55);margin-bottom:30px}
+  .main{min-width:0;padding:0 clamp(16px,4vw,56px) 90px;position:relative}
+  .main::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+    background-image:radial-gradient(color-mix(in srgb,var(--accent) 10%,transparent) 1.1px,transparent 1.3px);
+    background-size:26px 26px;
+    -webkit-mask-image:linear-gradient(to bottom,rgba(0,0,0,.8),transparent 420px);
+    mask-image:linear-gradient(to bottom,rgba(0,0,0,.8),transparent 420px)}
+  .main>*{position:relative}
+
+  /* 封面首页 */
+  .landing{max-width:820px;margin:0 auto;padding:clamp(26px,5.5vh,58px) 0 40px;text-align:center}
+  .peephole{position:relative;display:inline-block;margin-bottom:34px;transform:rotate(-2.5deg)}
+  .peephole .cover{display:block;width:min(272px,64vw);border-radius:8px;position:relative;z-index:1;
+    box-shadow:0 24px 60px -24px rgba(60,35,10,.6)}
+  .peephole::before{content:"";position:absolute;inset:-16px -12px;border:11px solid var(--yellow);
+    border-radius:20px;z-index:0;transform:rotate(2deg);
+    box-shadow:0 0 0 3px color-mix(in srgb,var(--yellow) 30%,transparent), 0 18px 40px -18px rgba(60,35,10,.5)}
+  .peephole::after{content:"";position:absolute;inset:-26px -22px;border:2px dashed color-mix(in srgb,var(--door) 55%,transparent);
+    border-radius:26px;z-index:0}
   .landing h1{font-size:clamp(30px,5vw,44px);letter-spacing:.02em;font-weight:700}
   .landing h1 small{display:block;margin-top:8px;font-family:var(--mono);font-size:12px;letter-spacing:.34em;color:var(--accent);font-weight:400}
-  .landing .stats{display:flex;justify-content:center;gap:34px;margin:28px 0 10px;flex-wrap:wrap}
+  .landing .stats{display:flex;justify-content:center;gap:36px;margin:28px 0 10px;flex-wrap:wrap}
   .landing .stat b{display:block;font-size:26px;font-family:var(--serif)}
   .landing .stat span{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;color:var(--faint)}
   .landing .hint{font-family:var(--sans);font-size:13.5px;color:var(--dim);margin-top:18px}
   .landing .hint kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 7px;background:var(--panel)}
-  .season-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:40px;text-align:left}
-  .sg{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 16px 14px;transition:.2s;cursor:pointer}
-  .sg:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 14px 30px -18px rgba(60,35,10,.4)}
-  .sg b{font-size:17px}
-  .sg span{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;color:var(--faint);margin-top:4px}
+  .season-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:13px;margin-top:42px;text-align:left}
+  .sg{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:15px 16px 13px;transition:.2s;cursor:pointer;
+    display:flex;gap:12px;align-items:center}
+  .sg:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 16px 34px -18px rgba(60,35,10,.45)}
+  .sg .ico{flex:none;width:34px;height:34px;color:var(--accent)}
+  .sg .tt b{display:block;font-size:16.5px}
+  .sg .tt span{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--faint);margin-top:2px}
+  .landing .lyric{margin-top:46px;font-family:var(--mono);font-size:11.5px;letter-spacing:.3em;color:var(--faint)}
+  .landing .lyric::before{content:"♫ ";color:var(--accent)}
 
   /* 阅读器 */
-  .reader{max-width:760px;margin:0 auto}
-  .ep-head{padding:clamp(26px,5vh,52px) 0 22px;border-bottom:1px solid var(--line);margin-bottom:26px}
-  .ep-head .code{font-family:var(--mono);font-size:12px;letter-spacing:.3em;color:var(--accent)}
+  .reader{max-width:780px;margin:0 auto}
+  .ep-head{padding:clamp(24px,4.5vh,48px) 0 20px;border-bottom:1px solid var(--line);margin-bottom:24px;position:relative}
+  .ep-head .code{font-family:var(--mono);font-size:12px;letter-spacing:.3em;color:var(--accent);display:flex;align-items:center;gap:8px}
+  .ep-head .code svg{width:15px;height:15px}
   .ep-head h2{font-size:clamp(23px,3.4vw,32px);font-weight:700;margin-top:6px;line-height:1.3}
   .script{font-size:calc(15.5px * var(--fz,1))}
   .ln{padding:5px 12px;margin:0 -12px;border-radius:8px;transition:background .2s}
   .ln:hover{background:var(--accent-soft)}
-  .ln .who{font-weight:700;margin-right:2px;user-select:none}
+  .ln .who{font-weight:700;margin-right:2px}
   .ln.scene,.ln.note{color:var(--dim)}
   .ln.scene{text-align:center;font-style:italic;font-size:.92em;padding:14px 0 10px;letter-spacing:.02em}
   .ln.scene::before{content:"— ";color:var(--accent)}
@@ -123,61 +147,89 @@
   .pg.next{text-align:right;margin-left:auto}
 
   /* 搜索结果 */
-  .results{max-width:760px;margin:0 auto;padding:26px 0 40px}
+  .results{max-width:780px;margin:0 auto;padding:26px 0 40px}
   .results .rhead{font-family:var(--sans);font-size:13.5px;color:var(--dim);margin-bottom:18px}
   .results .rhead b{color:var(--accent)}
+  .results .empty{padding:34px 0;text-align:center;color:var(--dim);font-style:italic}
+  .results .empty .hyd{font-size:22px;font-family:var(--serif);color:var(--accent);margin-bottom:8px}
   .hit{display:block;padding:11px 14px;border-radius:10px;border:1px solid var(--line);background:var(--panel);margin-bottom:9px;transition:.18s;cursor:pointer}
   .hit:hover{border-color:var(--accent);transform:translateX(3px)}
   .hit .src{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;color:var(--accent);margin-bottom:3px}
   .hit .txt{font-size:14px;color:var(--ink)}
   .hit .txt .who2{font-weight:700}
 
-  .backtop{position:fixed;right:26px;bottom:26px;z-index:40;width:42px;height:42px;border-radius:50%;
-    border:1px solid var(--line);background:var(--panel);color:var(--dim);font-size:16px;opacity:0;pointer-events:none;transition:.25s}
+  .backtop{position:fixed;right:26px;bottom:26px;z-index:40;width:44px;height:44px;border-radius:50%;
+    border:1px solid var(--line);background:var(--panel);color:var(--door);opacity:0;pointer-events:none;transition:.25s;
+    display:flex;align-items:center;justify-content:center}
+  .backtop svg{width:22px;height:22px}
   .backtop.show{opacity:1;pointer-events:auto}
-  .backtop:hover{border-color:var(--accent);color:var(--accent)}
+  .backtop:hover{border-color:var(--door);transform:translateY(-2px)}
 
-  /* 角色配色 */
+  /* 角色配色（含联合说话者模糊匹配，如 Chandler and Joey） */
   .c-monica{color:var(--c-monica)}.c-rachel{color:var(--c-rachel)}.c-phoebe{color:var(--c-phoebe)}
   .c-ross{color:var(--c-ross)}.c-chandler{color:var(--c-chandler)}.c-joey{color:var(--c-joey)}
   .c-other{color:var(--c-other)}
 
-  /* ───── 悬浮词典 ───── */
+  /* ───── 悬浮词典 · 双模式面板 ───── */
   body.dict-on .ln .w{border-bottom:1px dotted color-mix(in srgb,currentColor 45%,transparent);cursor:help}
   #tip{
-    position:fixed;z-index:90;max-width:340px;min-width:220px;
-    background:var(--panel);border:1px solid var(--line);border-radius:13px;
-    box-shadow:0 22px 55px -18px rgba(50,30,10,.5),0 4px 14px -6px rgba(50,30,10,.25);
-    padding:15px 17px 13px;pointer-events:none;opacity:0;transform:translateY(5px);
-    transition:opacity .16s ease,transform .16s ease;font-family:var(--sans);
+    position:fixed;z-index:95;width:340px;
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    box-shadow:0 24px 60px -18px rgba(50,30,10,.5),0 4px 14px -6px rgba(50,30,10,.25);
+    padding:15px 17px 12px;opacity:0;transform:translateY(5px);pointer-events:none;
+    transition:opacity .16s ease,transform .16s ease,width .2s ease;font-family:var(--sans);
   }
-  #tip.show{opacity:1;transform:none}
-  [data-theme="dark"] #tip{box-shadow:0 22px 55px -14px rgba(0,0,0,.8)}
-  #tip .tw{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
-  #tip .tw b{font-family:var(--serif);font-size:19px;font-weight:700}
+  #tip.show{opacity:1;transform:none;pointer-events:auto}
+  #tip.complex{width:432px}
+  [data-theme="dark"] #tip{box-shadow:0 24px 60px -14px rgba(0,0,0,.85)}
+  #tip .tw{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;padding-right:22px}
+  #tip .tw b{font-family:var(--serif);font-size:20px;font-weight:700}
   #tip .tw .ph{font-family:var(--mono);font-size:12px;color:var(--accent)}
   #tip .lemma-badge{font-size:11px;color:var(--accent);border:1px solid var(--accent);border-radius:99px;padding:1px 9px}
+  #tip .x{position:absolute;right:11px;top:10px;width:20px;height:20px;border:none;background:none;color:var(--faint);font-size:14px;line-height:1;display:none}
+  #tip.complex .x{display:block}
+  #tip .x:hover{color:var(--ink)}
   #tip .chips{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0 2px}
   #tip .chip{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;border-radius:5px;padding:2px 7px;
     background:var(--accent-soft);color:var(--accent)}
+  #tip .chip.yellow{background:color-mix(in srgb,var(--yellow) 18%,transparent);color:color-mix(in srgb,var(--yellow) 75%,var(--ink))}
+  #tip .chip.door{background:color-mix(in srgb,var(--door) 15%,transparent);color:var(--door)}
   #tip .chip.lvl{background:transparent;border:1px solid var(--line);color:var(--faint)}
   #tip .tr{margin-top:9px;font-size:13.5px;line-height:1.7;color:var(--ink);white-space:pre-line}
-  #tip .tr i{font-style:normal;color:var(--dim)}
+  #tip .tr .first{color:var(--ink)}
+  #tip .tr .rest{color:var(--dim);font-size:.94em}
   #tip .en{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);
     font-size:12px;line-height:1.6;color:var(--dim);font-style:italic;white-space:pre-line}
-  #tip .forms{margin-top:8px;font-family:var(--mono);font-size:11px;color:var(--faint)}
-  #tip .forms b{color:var(--dim);font-weight:400}
+  #tip .sec{margin-top:10px;padding-top:9px;border-top:1px solid var(--line)}
+  #tip .sec .sh{font-family:var(--mono);font-size:9.5px;letter-spacing:.24em;color:var(--faint);margin-bottom:6px}
+  #tip .forms{display:flex;flex-wrap:wrap;gap:6px}
+  #tip .fchip{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-radius:6px;padding:2px 9px;color:var(--dim);cursor:pointer;transition:.15s}
+  #tip .fchip:hover{border-color:var(--accent);color:var(--accent)}
+  #tip .fchip i{font-style:normal;font-size:9px;color:var(--faint);margin-right:5px}
+  #tip .bars{display:grid;gap:5px;margin-top:2px}
+  #tip .bar{display:grid;grid-template-columns:52px 1fr 58px;align-items:center;gap:9px;font-family:var(--mono);font-size:10.5px;color:var(--dim)}
+  #tip .bar .rail{height:5px;border-radius:3px;background:color-mix(in srgb,var(--ink) 8%,transparent);overflow:hidden}
+  #tip .bar .fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent),var(--yellow))}
+  #tip .cross{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  #tip .cross .cnt{font-size:12px;color:var(--dim)}
+  #tip .cross .cnt b{color:var(--accent);font-family:var(--serif);font-size:15px}
+  #tip .cross a{font-family:var(--mono);font-size:11px;color:var(--accent);cursor:pointer;white-space:nowrap}
+  #tip .cross a:hover{text-decoration:underline}
+  #tip .expand{display:block;width:100%;margin-top:10px;padding:6px 0 4px;border:none;border-top:1px dashed var(--line);
+    background:none;color:var(--faint);font-family:var(--mono);font-size:11px;letter-spacing:.18em;transition:.15s}
+  #tip .expand:hover{color:var(--accent)}
   #tip .loading{font-size:13px;color:var(--dim)}
 
   /* 响应式 */
   @media (max-width:900px){
     .layout{grid-template-columns:1fr}
-    .sidebar{position:fixed;left:0;top:58px;bottom:0;width:min(300px,84vw);z-index:60;transform:translateX(-102%);transition:transform .3s;box-shadow:20px 0 60px rgba(0,0,0,.25)}
+    .sidebar{position:fixed;left:0;top:56px;bottom:0;width:min(300px,84vw);z-index:60;transform:translateX(-102%);transition:transform .3s;box-shadow:20px 0 60px rgba(0,0,0,.25)}
     .sidebar.show{transform:none}
     .sidebar-toggle{display:inline-flex !important}
+    #tip,#tip.complex{width:min(432px,92vw)}
   }
   .sidebar-toggle{display:none;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--dim)}
-  .scrim{position:fixed;inset:0;top:58px;z-index:55;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:.3s}
+  .scrim{position:fixed;inset:0;top:56px;z-index:55;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:.3s}
   .scrim.show{opacity:1;pointer-events:auto}
   @media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important}}
 </style>
@@ -187,7 +239,8 @@
 <div class="topbar">
   <button class="sidebar-toggle" id="sb-toggle" aria-label="剧集列表">☰</button>
   <a class="brand" href="#" id="brand-home">
-    <b>老友记<i>·</i>台词库</b><span>FRIENDS&nbsp;SCRIPTS</span>
+    <svg class="cup" viewBox="0 0 64 64" fill="none"><path d="M18 30h22v10a10 10 0 0 1-10 10h-2a10 10 0 0 1-10-10z" fill="currentColor"/><path d="M40 32h4.5a5.5 5.5 0 0 1 0 11H40" stroke="currentColor" stroke-width="3.5"/><path d="M24 24c0-2.5 3.5-2.5 3.5-5M32 24c0-2.5 3.5-2.5 3.5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+    <span class="bt"><b>老友记<i>·</i>台词库</b><span>FRIENDS&nbsp;SCRIPTS&nbsp;·&nbsp;CENTRAL&nbsp;PERK</span></span>
   </a>
   <div class="searchbox">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
@@ -195,7 +248,7 @@
     <span class="shint">/</span>
   </div>
   <div class="tools">
-    <button class="tbtn" id="dict-toggle" title="悬浮查词开关">词 ON</button>
+    <button class="tbtn on" id="dict-toggle" title="悬浮查词开关">词 ON</button>
     <button class="tbtn" id="fz-dec" title="缩小字号">A-</button>
     <button class="tbtn" id="fz-inc" title="放大字号">A+</button>
     <button class="tbtn" id="theme" title="切换明暗">☾</button>
@@ -207,33 +260,43 @@
   <div class="scrim" id="scrim"></div>
   <main class="main" id="main">
     <div class="landing">
-      <img class="cover" src="cover.jpg" alt="Friends">
+      <div class="peephole"><img class="cover" src="cover.jpg" alt="Friends"></div>
       <h1>老友记 · 台词库<small>TEN&nbsp;SEASONS&nbsp;·&nbsp;ALL&nbsp;LINES</small></h1>
       <div class="stats">
         <div class="stat"><b>228</b><span>EPISODES</span></div>
-        <div class="stat"><b id="stat-lines">44,784</b><span>DIALOGUES</span></div>
-        <div class="stat"><b id="stat-words">882,995</b><span>WORDS</span></div>
+        <div class="stat"><b>48,403</b><span>DIALOGUES</span></div>
+        <div class="stat"><b>879,128</b><span>WORDS</span></div>
       </div>
-      <p class="hint">悬停任意单词看中英释义（ECDICT 词库）· <kbd>/</kbd> 搜索台词 · <kbd>←</kbd><kbd>→</kbd> 上下集 · 六人名字专属配色</p>
+      <p class="hint">悬停任意单词查中英释义与词频（ECDICT）· <kbd>/</kbd> 搜索台词 · <kbd>←</kbd><kbd>→</kbd> 上下集</p>
       <div class="season-grid" id="season-grid"></div>
+      <p class="lyric">I'LL&nbsp;BE&nbsp;THERE&nbsp;FOR&nbsp;YOU</p>
     </div>
   </main>
 </div>
 
-<button class="backtop" id="backtop" aria-label="回到顶部">↑</button>
+<button class="backtop" id="backtop" aria-label="回到顶部">
+  <svg viewBox="0 0 64 64" fill="none"><path d="M32 8c-2 8-12 10-20 8 4 4 8 6 12 6l4 26h8l4-26c4 0 8-2 12-6-8 2-18 0-20-8z" fill="currentColor" opacity=".9"/><path d="M32 48v8" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
+</button>
 
 <script>
 (() => {
   "use strict";
   const $ = (s) => document.querySelector(s);
   const main = $("#main"), sidebar = $("#sidebar");
-  const SIX = { Monica:1, Rachel:1, Phoebe:1, Ross:1, Chandler:1, Joey:1 };
-  const whoClass = (w) => SIX[w] ? "c-" + w.toLowerCase() : "c-other";
 
-  let INDEX = [];
-  let flat = [];
+  /* ── 角色配色：精确匹配 + 词边界模糊匹配（Chandler and Joey / MOnica / Fake Monica…） ── */
+  const SIX = ["Monica", "Rachel", "Phoebe", "Ross", "Chandler", "Joey"];
+  const SIX_RE = SIX.map((n) => [n, new RegExp(`(^|[^A-Za-z])${n}([^A-Za-z]|$)`, "i")]);
+  function whoClass(w) {
+    if (!w) return "c-other";
+    for (const [n, re] of SIX_RE) if (re.test(w)) return "c-" + n.toLowerCase();
+    return "c-other";
+  }
+
+  let INDEX = [], flat = [];
   const seasonCache = new Map();
   let current = -1;
+  let epWordCount = {};          // 当前集词频（面板交叉信息）
   let corpus = null;
 
   /* ── 主题 / 字号 ── */
@@ -254,7 +317,7 @@
   $("#fz-inc").addEventListener("click", () => { fz = Math.min(1.45, +(fz + .08).toFixed(2)); applyFz(); });
 
   /* ── 工具 ── */
-  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const pad = (n) => String(n).padStart(2, "0");
   const epKey = (it) => `s${it.s}e${it.e}`;
 
@@ -263,7 +326,8 @@
     return seasonCache.get(s);
   }
 
-  /* ── 侧栏 ── */
+  /* ── 侧栏（每季一个主题曲色点） ── */
+  const SEASON_DOTS = ["#e0603c", "#4d8a5a", "#c9722e", "#7d64ad", "#3e7ca6", "#b0483f", "#5a8a3e", "#94639c", "#3f7f8a", "#a8683a"];
   function buildSidebar() {
     const byS = new Map();
     INDEX.forEach((it, i) => {
@@ -273,7 +337,7 @@
     let html = "";
     for (const [s, eps] of [...byS.entries()].sort((a, b) => a[0] - b[0])) {
       html += `<div class="season-block" data-s="${s}">
-        <div class="season-head"><span class="tri">▶</span><span class="n">S${pad(s)}</span> Season ${s}<span class="cnt">${eps.length} 集</span></div>
+        <div class="season-head"><span class="tri">▶</span><span class="dot" style="background:${SEASON_DOTS[s - 1]}"></span> Season ${s}<span class="cnt">${eps.length} 集</span></div>
         <div class="eps">${eps.map((it) =>
           `<div class="ep" data-i="${it.i}"><span class="no">${it.e}</span><span class="t">${esc(it.t)}</span></div>`).join("")}</div>
       </div>`;
@@ -289,14 +353,10 @@
     sidebar.querySelectorAll(".ep.on").forEach((el) => el.classList.remove("on"));
     if (current < 0) return;
     const el = sidebar.querySelector(`.ep[data-i="${current}"]`);
-    if (el) {
-      el.classList.add("on");
-      el.closest(".season-block").classList.add("open");
-    }
+    if (el) { el.classList.add("on"); el.closest(".season-block").classList.add("open"); }
   }
 
   /* ── 阅读器 ── */
-  // 单词包裹：把文本按英文单词切开，逐段转义，词包成 .w（始终包裹；开关只控制样式与悬浮行为）
   const WRE = /[A-Za-z][A-Za-z'-]*/g;
   function wordify(text) {
     let out = "", last = 0;
@@ -309,11 +369,17 @@
   }
 
   function renderScript(ep) {
+    epWordCount = {};
     return ep.lines.map((l, idx) => {
       if (l.k === "scene") return `<p class="ln scene" data-i="${idx}">${esc(l.t)}</p>`;
       if (l.k === "note") return `<p class="ln note" data-i="${idx}">${esc(l.t)}</p>`;
       const who = `<span class="who ${whoClass(l.w)}">${esc(l.w)}:</span> `;
-      const body = l.p.map((seg) => seg[1] ? `<span class="u">${wordify(seg[0])}</span>` : wordify(seg[0])).join(" ");
+      const body = l.p.map((seg) => {
+        const raw = seg[0];
+        for (const m of raw.matchAll(WRE)) epWordCount[m[0].toLowerCase()] = (epWordCount[m[0].toLowerCase()] || 0) + 1;
+        const html = seg[1] ? `<span class="u">${wordify(raw)}</span>` : wordify(raw);
+        return html;
+      }).join(" ");
       return `<p class="ln" data-i="${idx}">${who}${body}</p>`;
     }).join("\n");
   }
@@ -328,7 +394,10 @@
     const prev = flat[i - 1], next = flat[i + 1];
     main.innerHTML = `<div class="reader">
       <div class="ep-head">
-        <div class="code">EPISODE ${it.s} × ${it.e}</div>
+        <div class="code">
+          <svg viewBox="0 0 64 64" fill="none"><path d="M14 36h24v8a10 10 0 0 1-10 10h-4a10 10 0 0 1-10-10z" fill="currentColor"/><path d="M38 38h4a5 5 0 0 1 0 10h-4" stroke="currentColor" stroke-width="3"/></svg>
+          EPISODE ${it.s} × ${it.e}
+        </div>
         <h2>${esc(ep.t)}</h2>
       </div>
       <div class="script">${renderScript(ep)}</div>
@@ -342,6 +411,8 @@
     markActive();
     history.replaceState(null, "", "#" + epKey(it));
     scrollTo({ top: 0 });
+    hideTip();
+    prefetchDict(it.s);   // 本集词库随页面预取（约 1.4MB，仅当前季）
     if (focusLine != null) {
       const el = main.querySelector(`.ln[data-i="${focusLine}"]`);
       if (el) { el.scrollIntoView({ block: "center" }); el.classList.add("flash"); }
@@ -392,11 +463,15 @@
         if (l.k !== "line") continue;
         const hay = (l.w + " " + l.t).toLowerCase();
         const at = hay.indexOf(q);
-        if (at >= 0) {
-          hits.push({ ep, l, at });
-          if (hits.length >= 300) break outer;
-        }
+        if (at >= 0) { hits.push({ ep, l, at }); if (hits.length >= 300) break outer; }
       }
+    }
+    if (!hits.length) {
+      main.innerHTML = `<div class="results">
+        <div class="rhead">“${esc(q)}” 没有命中</div>
+        <div class="empty"><div class="hyd">How you doin'?</div>十年台词里都没这句——换个说法试试？</div>
+      </div>`;
+      return;
     }
     main.innerHTML = `<div class="results">
       <div class="rhead">“${esc(q)}” 命中 <b>${hits.length}${hits.length >= 300 ? "+" : ""}</b> 条台词 · 点击跳转</div>
@@ -417,15 +492,18 @@
       }));
   }
 
-  /* ── 悬浮词典（ECDICT）── */
-  let DICT_ON = localStorage.getItem("fs_dict") !== "0";   // 默认开启
-  let DICT = null, dictLoading = null;
+  /* ═════════ 悬浮词典 · 双模式 ═════════ */
+  let DICT_ON = localStorage.getItem("fs_dict") !== "0";
+  let DICT = null, dictSeason = 0, dictFetching = null;
   const tip = document.createElement("div");
   tip.id = "tip"; document.body.appendChild(tip);
+  let tipWord = null, tipComplex = false, hideTimer = null;
 
   function applyDict() {
     document.body.classList.toggle("dict-on", DICT_ON);
-    $("#dict-toggle").textContent = DICT_ON ? "词 ON" : "词 OFF";
+    const b = $("#dict-toggle");
+    b.textContent = DICT_ON ? "词 ON" : "词 OFF";
+    b.classList.toggle("on", DICT_ON);
     if (!DICT_ON) hideTip();
   }
   applyDict();
@@ -435,46 +513,102 @@
     applyDict();
   });
 
-  const TAGS = { zk:"中考", gk:"高考", cet4:"CET-4", cet6:"CET-6", ky:"考研", ielts:"雅思", toefl:"TOEFL", gre:"GRE" };
+  async function prefetchDict(s) {
+    if (dictSeason === s && DICT) return;
+    if (dictSeason === s && dictFetching) return dictFetching;
+    dictSeason = s; DICT = null;
+    dictFetching = fetch(`data/dict/s${pad(s)}.json`).then((r) => r.json()).then((j) => {
+      DICT = j;
+      if (tip.classList.contains("show") && tipWord) renderTip(tipWord);
+    }).finally(() => { dictFetching = null; });
+    return dictFetching;
+  }
+
+  const TAGS = { zk: "中考", gk: "高考", cet4: "CET-4", cet6: "CET-6", ky: "考研", ielts: "雅思", toefl: "TOEFL", gre: "GRE" };
+  const EX_LABEL = { p: "过去式", d: "过去分词", i: "现在分词", "3": "三单", r: "比较级", t: "最高级", s: "原型", "0": "原形", "1": "变体" };
+
   function lookup(w) {
     if (!DICT) return null;
     let e = DICT.d[w], lemmaBadge = "";
-    if (!e && DICT.l[w]) { const [base, rel] = DICT.l[w]; e = DICT.d[base]; if (e) lemmaBadge = `${base} 的${rel}`; }
-    if (!e && /'s$/.test(w)) { e = DICT.d[w.replace(/'s$/, "")]; if (e) lemmaBadge = `${w.replace(/'s$/, "")} 的所有格`; }
+    if (!e && DICT.l[w]) { const [base, rel] = DICT.l[w]; e = DICT.d[base]; if (e) lemmaBadge = `${base} · ${rel}`; }
+    if (!e && /'s$/.test(w)) { const b = w.replace(/'s$/, ""); e = DICT.d[b]; if (e) lemmaBadge = `${b} · 所有格`; }
     return e ? { e, lemmaBadge } : null;
   }
 
-  function showTip(el, x, y) {
-    const w = el.dataset.w;
-    if (!DICT) {
-      if (!dictLoading) dictLoading = fetch("data/dict.json").then((r) => r.json()).then((j) => { DICT = j; });
-      tip.innerHTML = `<div class="loading">词库载入中…（首次约 4MB，之后有缓存）</div>`;
-      placeTip(x, y);
-      dictLoading.then(() => { if (tip.classList.contains("show")) renderTip(el, x, y); });
-      return;
-    }
-    renderTip(el, x, y);
+  function rankBar(label, rank) {
+    if (!rank) return "";
+    const pct = Math.max(4, Math.round(100 * (1 - Math.log10(rank) / 5.7)));  // rank 1 → ~100, rank 50万 → ~4
+    return `<div class="bar"><span>${label}</span><span class="rail"><span class="fill" style="width:${pct}%"></span></span><span>#${rank}</span></div>`;
   }
 
-  function renderTip(el, x, y) {
-    const w = el.dataset.w;
+  function renderTip(w) {
     const hit = lookup(w);
     if (!hit) { hideTip(); return; }
     const [ph, def, tr, pos, collins, oxford, tag, bnc, frq, ex] = hit.e;
+    const trLines = tr.split("\n").filter(Boolean);
+    const defLines = def.split("\n").filter(Boolean);
     const chips = [];
-    if (hit.lemmaBadge) chips.push(`<span class="chip">${hit.lemmaBadge}</span>`);
-    if (collins) chips.push(`<span class="chip">${"★".repeat(Math.min(collins, 5))}</span>`);
-    if (oxford) chips.push(`<span class="chip">牛津3000</span>`);
+    if (hit.lemmaBadge) chips.push(`<span class="chip door">${esc(hit.lemmaBadge)}</span>`);
+    if (collins) chips.push(`<span class="chip yellow">${"★".repeat(Math.min(collins, 5))}</span>`);
+    if (oxford) chips.push(`<span class="chip yellow">牛津3000</span>`);
     for (const t of tag.split(" ")) if (TAGS[t]) chips.push(`<span class="chip">${TAGS[t]}</span>`);
-    if (bnc) chips.push(`<span class="chip lvl">BNC ${bnc}</span>`);
-    if (frq) chips.push(`<span class="chip lvl">COCA ${frq}</span>`);
-    const forms = ex ? ex.split("/").filter((p) => /^[a-z]+:/i.test(p)).map((p) => p.replace(/^[a-z0-9]+:/i, "")).join(" · ") : "";
+    const lvlChips = [];
+    if (bnc) lvlChips.push(`<span class="chip lvl">BNC ${bnc}</span>`);
+    if (frq) lvlChips.push(`<span class="chip lvl">COCA ${frq}</span>`);
+    const forms = ex.split("/").filter(Boolean).map((p) => {
+      const c = p.indexOf(":");
+      if (c < 1) return null;
+      return { k: p.slice(0, c), v: p.slice(c + 1) };
+    }).filter((f) => f && EX_LABEL[f.k]);
+
+    tip.className = tipComplex ? "complex" : "";
     tip.innerHTML = `
-      <div class="tw"><b>${esc(el.textContent)}</b>${ph ? `<span class="ph">/${esc(ph)}/</span>` : ""}</div>
-      ${chips.length ? `<div class="chips">${chips.join("")}</div>` : ""}
-      ${tr ? `<div class="tr">${esc(tr).split("\n").slice(0, 6).join("\n")}${tr.split("\n").length > 6 ? "\n…" : ""}</div>` : ""}
-      ${def ? `<div class="en">${esc(def).split("\n").slice(0, 3).join("\n")}${def.split("\n").length > 3 ? "\n…" : ""}</div>` : ""}
-      ${forms ? `<div class="forms"><b>变形</b> ${esc(forms)}</div>` : ""}`;
+      <button class="x" title="收起">✕</button>
+      <div class="tw"><b>${esc(tipWordDisplay)}</b>${ph ? `<span class="ph">/${esc(ph)}/</span>` : ""}</div>
+      ${chips.length || lvlChips.length ? `<div class="chips">${chips.join("")}${tipComplex ? lvlChips.join("") : ""}</div>` : ""}
+      ${trLines.length ? `<div class="tr"><span class="first">${esc(trLines[0])}</span>${tipComplex && trLines.length > 1 ? `\n<span class="rest">${esc(trLines.slice(1).join("\n"))}</span>` : ""}</div>` : ""}
+      ${tipComplex && defLines.length ? `<div class="en">${esc(defLines.join("\n"))}</div>` : ""}
+      ${tipComplex && forms.length ? `<div class="sec"><div class="sh">WORD&nbsp;FORMS&nbsp;·&nbsp;变形</div><div class="forms">
+        ${forms.map((f) => `<span class="fchip" data-lw="${esc(f.v)}"><i>${EX_LABEL[f.k]}</i>${esc(f.v)}</span>`).join("")}
+      </div></div>` : ""}
+      ${tipComplex && (bnc || frq) ? `<div class="sec"><div class="sh">FREQUENCY&nbsp;·&nbsp;词频</div><div class="bars">${rankBar("BNC", bnc)}${rankBar("COCA", frq)}</div></div>` : ""}
+      ${tipComplex ? `<div class="sec cross"><span class="cnt">本集出现 <b>${epWordCount[w] || 1}</b> 次</span><a id="tip-search">在台词中搜索 →</a></div>` : ""}
+      <button class="expand">${tipComplex ? "收起 ▴" : "展开全部 ▾"}</button>`;
+    tip.querySelector(".x").addEventListener("click", hideTip);
+    tip.querySelector(".expand").addEventListener("click", () => {
+      tipComplex = !tipComplex;
+      renderTip(w);
+      keepTipHere();
+    });
+    const fc = tip.querySelectorAll(".fchip");
+    fc.forEach((el) => el.addEventListener("click", () => {
+      const nw = el.dataset.lw;
+      if (lookup(nw)) { tipWord = nw; tipWordDisplay = nw; tipComplex = true; renderTip(nw); keepTipHere(); }
+      else { el.style.opacity = .4; }
+    }));
+    const ts = tip.querySelector("#tip-search");
+    if (ts) ts.addEventListener("click", () => {
+      qEl.value = w;
+      runSearch();
+      hideTip();
+    });
+  }
+
+  let tipWordDisplay = "";
+  function keepTipHere() { /* 展开后保持原位：由 placeTip 的边界钳制处理 */ }
+  function showTip(el, x, y) {
+    clearTimeout(hideTimer);
+    tipWord = el.dataset.w;
+    tipWordDisplay = el.textContent;
+    if (!DICT) {
+      if (!dictFetching && current >= 0) prefetchDict(flat[current].s);
+      if (!dictFetching) { hideTip(); return; }
+      tip.className = "";
+      tip.innerHTML = `<div class="loading">词库载入中…（随本集预取，仅首次）</div>`;
+      placeTip(x, y);
+      return;
+    }
+    renderTip(tipWord);
     placeTip(x, y);
   }
 
@@ -487,7 +621,8 @@
     tip.style.left = Math.max(10, tx) + "px";
     tip.style.top = ty + "px";
   }
-  function hideTip() { tip.classList.remove("show"); }
+  function hideTip() { clearTimeout(hideTimer); tip.classList.remove("show"); tipComplex = false; }
+  function queueHide() { clearTimeout(hideTimer); hideTimer = setTimeout(hideTip, 260); }
 
   main.addEventListener("mouseover", (e) => {
     if (!DICT_ON) return;
@@ -495,17 +630,18 @@
     if (el) showTip(el, e.clientX, e.clientY);
   });
   main.addEventListener("mouseout", (e) => {
-    if (e.target.closest(".ln .w")) hideTip();
+    if (e.target.closest(".ln .w")) queueHide();
   });
   main.addEventListener("mousemove", (e) => {
     const el = e.target.closest(".ln .w");
-    if (DICT_ON && el && tip.classList.contains("show")) placeTip(e.clientX, e.clientY);
+    if (DICT_ON && el && tip.classList.contains("show") && !tipComplex) placeTip(e.clientX, e.clientY);
   }, { passive: true });
-  // 触屏：点词显示/隐藏
+  tip.addEventListener("mouseenter", () => clearTimeout(hideTimer));
+  tip.addEventListener("mouseleave", queueHide);
   main.addEventListener("click", (e) => {
     if (!DICT_ON) return;
     const el = e.target.closest(".ln .w");
-    if (el) { e.preventDefault(); showTip(el, e.clientX, e.clientY); }
+    if (el) { e.preventDefault(); tipComplex = true; showTip(el, e.clientX, e.clientY); }
   });
   addEventListener("scroll", hideTip, { passive: true });
 
@@ -513,6 +649,7 @@
   addEventListener("keydown", (e) => {
     const typing = e.target.tagName === "INPUT";
     if (e.key === "/" && !typing) { e.preventDefault(); qEl.focus(); qEl.select(); return; }
+    if (e.key === "Escape") { hideTip(); return; }
     if (typing) return;
     if (e.key === "ArrowLeft" && current > 0) openByI(current - 1);
     if (e.key === "ArrowRight" && current >= 0 && current < flat.length - 1) openByI(current + 1);
@@ -535,19 +672,39 @@
     flat = INDEX.slice();
     buildSidebar();
     sidebar.querySelector(".season-block")?.classList.add("open");
-    // 首页十季快捷入口
+    // 首页十季卡（每季一个主题图标）
+    const ICONS = {
+      mug: `<path d="M18 32h24v9a11 11 0 0 1-11 11h-2a11 11 0 0 1-11-11z" fill="currentColor"/><path d="M42 34h4.5a5.5 5.5 0 0 1 0 11H42" stroke="currentColor" stroke-width="3.5"/>`,
+      umbrella: `<path d="M32 9C20 9 10 18 8 29c3-2 6-2 8 0 2-2 5-2 8 0 2-2 5-2 8 0s6 2 8 0c2-2 5-2 8 0-2-11-12-20-24-20z" fill="currentColor"/><path d="M32 29v20a6 6 0 0 0 6 6" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round"/>`,
+      couch: `<path d="M12 34c0-4 3-6 6-6h28c3 0 6 2 6 6v4H12z" fill="currentColor"/><rect x="8" y="38" width="48" height="8" rx="3" fill="currentColor" opacity=".75"/><path d="M16 46v6M48 46v6" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>`,
+      frame: `<rect x="14" y="16" width="36" height="32" rx="6" fill="none" stroke="currentColor" stroke-width="5"/><circle cx="32" cy="32" r="4.5" fill="currentColor"/>`,
+      guitar: `<path d="M38 10l6 6-9 9c3 2 4 5 3 8-1.5 4.5-7 7-12 5s-7-7-5-11c1.5-3 4.5-4 7-3l10-10 0-4z" fill="currentColor" transform="translate(-4 4)"/>`,
+      heart: `<path d="M32 50C18 40 12 32 12 24a9 9 0 0 1 16-5.5A9 9 0 0 1 44 24c0 8-6 16-12 26z" fill="currentColor"/>`,
+    };
+    const ORDER = ["mug", "umbrella", "couch", "frame", "guitar", "heart", "mug", "umbrella", "couch", "frame"];
     const byS = new Map();
     INDEX.forEach((it, i) => { if (!byS.has(it.s)) byS.set(it.s, i); });
-    $("#season-grid").innerHTML = [...byS.entries()].sort((a, b) => a[0] - b[0]).map(([s, i]) =>
-      `<div class="sg" data-i="${i}"><b>Season ${s}</b><span>${INDEX.filter((x) => x.s === s).length} EPISODES</span></div>`).join("");
+    $("#season-grid").innerHTML = [...byS.entries()].sort((a, b) => a[0] - b[0]).map(([s, i]) => {
+      const ic = ORDER[s - 1] || "mug";
+      return `<div class="sg" data-i="${i}">
+        <svg class="ico" viewBox="0 0 64 64" fill="none" style="color:${SEASON_DOTS[s - 1]}">${ICONS[ic]}</svg>
+        <div class="tt"><b>Season ${s}</b><span>${INDEX.filter((x) => x.s === s).length} EPISODES</span></div>
+      </div>`;
+    }).join("");
     $("#season-grid").querySelectorAll(".sg").forEach((el) =>
       el.addEventListener("click", () => openByI(+el.dataset.i)));
-    // 深链接 #s1e1
     const m = location.hash.match(/^#s(\d+)e([\w-]+)$/);
     if (m) {
       const i = flat.findIndex((x) => x.s === +m[1] && String(x.e) === m[2]);
       if (i >= 0) openByI(i);
     }
+    // 同页 hash 跳转（如从搜索结果/外部链接点 #s2e8）也响应
+    addEventListener("hashchange", () => {
+      const m = location.hash.match(/^#s(\d+)e([\w-]+)$/);
+      if (!m) return;
+      const i = flat.findIndex((x) => x.s === +m[1] && String(x.e) === m[2]);
+      if (i >= 0 && i !== current) openByI(i);
+    });
   })();
 })();
 </script>

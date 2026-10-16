@@ -1,0 +1,24 @@
+{
+  "name": "friends-scripts",
+  "version": "1.0.0",
+  "description": "老友记台词库：<https://ssx86.github.io/friends-scripts/>",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ssx86/friends-scripts.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/ssx86/friends-scripts/issues"
+  },
+  "homepage": "https://github.com/ssx86/friends-scripts#readme",
+  "devDependencies": {
+    "wink-lemmatizer": "^3.0.4"
+  }
+}
