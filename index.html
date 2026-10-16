@@ -1,274 +1,423 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-  <head>
-    <title>Friends Transcripts</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-  </head>
-  <body>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>老友记台词库 · Friends Scripts</title>
+<meta name="description" content="老友记十季 228 集全台词：搜索、阅读、角色配色。日常英语学习工具。">
+<meta name="theme-color" content="#faf6ef">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23c9722e'/%3E%3Ctext x='32' y='42' font-size='28' text-anchor='middle' fill='%23faf6ef' font-family='Georgia,serif' font-weight='bold'%3EF%3C/text%3E%3Ccircle cx='46' cy='18' r='6' fill='%23faf6ef' opacity='.35'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#faf6ef; --bg2:#f3ecdf; --panel:#fffdf8;
+    --ink:#2b2118; --dim:#7a6c5c; --faint:#a4968a;
+    --accent:#c9722e; --accent-soft:rgba(201,114,46,.12);
+    --line:rgba(90,70,50,.16); --mark:#ffe9a8;
+    --c-monica:#b45309; --c-rachel:#0e7490; --c-phoebe:#7c3aed;
+    --c-ross:#1d4ed8; --c-chandler:#047857; --c-joey:#be185d;
+    --c-other:#8d7d6b; --uncut:#1d4ed8;
+    --serif:Georgia,"Palatino Linotype","Songti SC",SimSun,serif;
+    --mono:"Cascadia Code",Consolas,Menlo,monospace;
+    --sans:"Segoe UI","PingFang SC","Microsoft YaHei UI",sans-serif;
+  }
+  [data-theme="dark"]{
+    --bg:#181310; --bg2:#211a15; --panel:#241c16;
+    --ink:#e8ddcf; --dim:#a5947f; --faint:#6e5f50;
+    --accent:#e8934f; --accent-soft:rgba(232,147,79,.14);
+    --line:rgba(232,221,207,.14); --mark:#5a4a1e;
+    --c-monica:#f59e0b; --c-rachel:#22d3ee; --c-phoebe:#a78bfa;
+    --c-ross:#60a5fa; --c-chandler:#34d399; --c-joey:#f472b6;
+    --c-other:#b0a08c; --uncut:#93c5fd;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--serif);line-height:1.75;transition:background .3s,color .3s}
+  ::selection{background:var(--accent-soft)}
+  button{font-family:inherit;cursor:pointer}
+  a{color:inherit;text-decoration:none}
 
-<h3>SEASON 1</h3>
-    <ul>
-      <li><a href="season/0101.html">101  Monica Gets A Roommate </a></li>
-      <li><a href="season/0102.html">102  The Sonogram At The End </a></li>
-      <li><a href="season/0103.html">103  The Thumb </a></li>
-      <li><a href="season/0104.html">104  George Stephanopoulos </a></li>
-      <li><a href="season/0105.html">105  The East German Laundry Detergent </a></li>
-      <li><a href="season/0106.html">106  The Butt </a></li>
-      <li><a href="season/0107.html">107  The Blackout </a></li>
-      <li><a href="season/0108.html">108  Nana Dies Twice </a></li>
-      <li><a href="season/0109.html">109  Underdog Gets Away </a></li>
-      <li><a href="season/0110.html">110  The Monkey </a></li>
-      <li><a href="season/0111.html">111  Mrs. Bing </a></li>
-      <li><a href="season/0112.html">112  The Dozen Lasagnas </a></li>
-      <li><a href="season/0113.html">113  The Boobies </a></li>
-      <li><a href="season/0114.html">114  The Candy Hearts </a></li>
-      <li><a href="season/0115.html">115  The Stoned Guy </a></li>
-      <li><a href="season/0116.html">116  The Two Parts, Part I </a></li>
-      <li><a href="season/0117.html">117  The Two Parts, Part II </a></li>
-      <li><a href="season/0118.html">118  All The Poker </a></li>
-      <li><a href="season/0119.html">119  The Monkey Gets Away </a></li>
-      <li><a href="season/0120.html">120  The Evil Orthodontist </a></li>
-      <li><a href="season/0121.html">121  The Fake Monica </a></li>
-      <li><a href="season/0122.html">122  The Ick Factor </a></li>
-      <li><a href="season/0123.html">123  The Birth </a></li>
-      <li><a href="season/0124.html">124  Rachel Finds Out </a></li>
-    </ul>
+  /* ───── 顶栏 ───── */
+  .topbar{
+    position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;
+    padding:12px clamp(14px,3vw,28px);
+    background:color-mix(in srgb,var(--bg) 88%,transparent);
+    border-bottom:1px solid var(--line);
+  }
+  .brand{display:flex;align-items:baseline;gap:10px;white-space:nowrap}
+  .brand b{font-family:var(--serif);font-size:19px;font-weight:700;letter-spacing:.02em}
+  .brand b i{font-style:normal;color:var(--accent)}
+  .brand span{font-family:var(--mono);font-size:10.5px;color:var(--faint);letter-spacing:.18em}
+  .searchbox{flex:1;max-width:520px;display:flex;align-items:center;gap:9px;
+    background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:7px 13px;transition:border-color .2s}
+  .searchbox:focus-within{border-color:var(--accent)}
+  .searchbox svg{flex:none;opacity:.45}
+  .searchbox input{flex:1;border:none;outline:none;background:none;color:var(--ink);font-size:14.5px;font-family:var(--sans)}
+  .searchbox input::placeholder{color:var(--faint)}
+  .searchbox .shint{font-family:var(--mono);font-size:10px;color:var(--faint);border:1px solid var(--line);border-radius:4px;padding:1px 6px}
+  .tools{display:flex;gap:8px;margin-left:auto}
+  .tbtn{background:var(--panel);border:1px solid var(--line);border-radius:8px;color:var(--dim);
+    font-size:13px;padding:6px 11px;transition:.2s;font-family:var(--sans)}
+  .tbtn:hover{border-color:var(--accent);color:var(--ink)}
 
-<h3>SEASON 2</h3>
-    <ul>
-    <li><a href="season/0201.html">201 Ross's New Girlfriend</a></li>
-    <li><a href="season/0202.html">202 The Breast Milk</a></li>
-    <li><a href="season/0203.html">203 Heckles Dies</a></li>
-    <li><a href="season/0204.html">204 Phoebe's Husband</a></li>
-    <li><a href="season/0205.html">205 Five Steaks And An Eggplant</a></li>
-    <li><a href="season/0206.html">206 The Baby On The Bus</a></li>
-    <li><a href="season/0207.html">207 Ross Finds Out</a></li>
-    <li><a href="season/0208.html">208 The List</a></li>
-    <li><a href="season/0209.html">209 Phoebe's Dad</a></li>
-    <li><a href="season/0210.html">210 Russ</a></li>
-    <li><a href="season/0211.html">211 The Lesbian Wedding</a></li>
-    <li><a href="season/0212-0213.html">212-213 The Superbowl</a></li>
-    <li><a href="season/0214.html">214 The Prom Video</a></li>
-    <li><a href="season/0215.html">215 Ross And Rachel... You Know</a></li>
-    <li><a href="season/0216.html">216 Joey Moves Out</a></li>
-    <li><a href="season/0217.html">217 Eddie Moves In</a></li>
-    <li><a href="season/0218.html">218 Dr. Ramoray Dies</a></li>
-    <li><a href="season/0219.html">219 Eddie Won't Go</a></li>
-    <li><a href="season/0220.html">220 uld Yeller Dies</a></li>
-    <li><a href="season/0221.html">221 The Bullies</a></li>
-    <li><a href="season/0222.html">222 The Two Parties</a></li>
-    <li><a href="season/0223.html">223 The Chicken Pox</a></li>
-    <li><a href="season/0224.html">224 Barry And Mindy's Wedding</a></li>
-  </ul>
+  /* ───── 布局 ───── */
+  .layout{display:grid;grid-template-columns:270px 1fr;min-height:calc(100vh - 58px)}
+  .sidebar{border-right:1px solid var(--line);background:var(--bg2);
+    overflow-y:auto;height:calc(100vh - 58px);position:sticky;top:58px;padding:14px 10px 30px}
+  .season-block{margin-bottom:4px}
+  .season-head{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;
+    font-family:var(--sans);font-size:13px;font-weight:600;color:var(--dim);cursor:pointer;user-select:none;transition:.2s}
+  .season-head:hover{background:var(--accent-soft);color:var(--ink)}
+  .season-head .n{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.1em}
+  .season-head .cnt{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+  .season-head .tri{transition:transform .25s;font-size:10px;color:var(--faint)}
+  .season-block.open .tri{transform:rotate(90deg)}
+  .eps{display:none;padding:2px 0 6px 8px}
+  .season-block.open .eps{display:block}
+  .ep{display:flex;gap:9px;align-items:baseline;padding:5px 10px;border-radius:7px;font-size:13px;color:var(--dim);cursor:pointer;transition:.15s}
+  .ep:hover{background:var(--accent-soft);color:var(--ink)}
+  .ep.on{background:var(--accent);color:#fff}
+  .ep .no{font-family:var(--mono);font-size:10.5px;color:var(--faint);min-width:26px}
+  .ep.on .no{color:rgba(255,255,255,.75)}
+  .ep .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-<h3>SEASON 3</h3>
-    <ul>
-    <li><a href="season/0301.html">301 The Princess Leia Fantasy </a></li>
-    <li><a href="season/0302.html">302 No One's Ready</a></li>
-    <li><a href="season/0303.html">303 The Jam</a></li>
-    <li><a href="season/0304.html">304 The Metaphorical Tunnel</a></li>
-    <li><a href="season/0305.html">305 Frank Jr.</a></li>
-    <li><a href="season/0306.html">306 The Flashback</a></li>
-    <li><a href="season/0307.html">307 The Race Car Bed</a></li>
-    <li><a href="season/0308.html">308 The Giant Poking Device</a></li>
-    <li><a href="season/0309.html">309 The Football</a></li>
-    <li><a href="season/0310.html">310 Rachel Quits</a></li>
-    <li><a href="season/0311.html">311 Chandler Can't Remember Which Sister</a></li>
-    <li><a href="season/0312.html">312 All The Jealousy</a></li>
-    <li><a href="season/0313.html">313 Monica And Richard Are Just Friends</a></li>
-    <li><a href="season/0314.html">314 Phoebe's Ex-Partner</a></li>
-    <li><a href="season/0315.html">315 Ross And Rachel Take A Break</a></li>
-    <li><a href="season/0316.html">316 The Morning After</a></li>
-    <li><a href="season/0317.html">317 The Ski Trip</a></li>
-    <li><a href="season/0318.html">318 The Hypnosis Tape</a></li>
-    <li><a href="season/0319.html">319 The Tiny T-Shirt</a></li>
-    <li><a href="season/0320.html">320 The Dullhouse</a></li>
-    <li><a href="season/0321.html">321 The Chick And The Duck</a></li>
-    <li><a href="season/0322.html">322 The Screamer</a></li>
-    <li><a href="season/0323.html">323 Ross's Thing</a></li>
-    <li><a href="season/0324.html">324 The Ultimate Fighting Champion</a></li>
-    <li><a href="season/0325.html">325 At The Beach</a></li>
-  </ul>
+  /* ───── 主区 ───── */
+  .main{min-width:0;padding:0 clamp(16px,4vw,56px) 90px}
+  .landing{max-width:760px;margin:0 auto;padding:clamp(28px,6vh,64px) 0 40px;text-align:center}
+  .landing .cover{width:min(300px,70vw);border-radius:14px;box-shadow:0 30px 70px -30px rgba(60,35,10,.55);margin-bottom:30px}
+  .landing h1{font-size:clamp(30px,5vw,44px);letter-spacing:.02em;font-weight:700}
+  .landing h1 small{display:block;margin-top:8px;font-family:var(--mono);font-size:12px;letter-spacing:.34em;color:var(--accent);font-weight:400}
+  .landing .stats{display:flex;justify-content:center;gap:34px;margin:28px 0 10px;flex-wrap:wrap}
+  .landing .stat b{display:block;font-size:26px;font-family:var(--serif)}
+  .landing .stat span{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;color:var(--faint)}
+  .landing .hint{font-family:var(--sans);font-size:13.5px;color:var(--dim);margin-top:18px}
+  .landing .hint kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 7px;background:var(--panel)}
+  .season-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:40px;text-align:left}
+  .sg{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 16px 14px;transition:.2s;cursor:pointer}
+  .sg:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 14px 30px -18px rgba(60,35,10,.4)}
+  .sg b{font-size:17px}
+  .sg span{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;color:var(--faint);margin-top:4px}
 
-<h3>SEASON 4</h3>
-    <ul>
-    <li><a href="season/0401.html">401 The Jellyfish</a></li>
-    <li><a href="season/0402.html">402 The Cat</a></li>
-    <li><a href="season/0403.html">403 The Cuffs</a></li>
-    <li><a href="season/0404.html">404 The Ballroom Dancing</a></li>
-    <li><a href="season/0405.html">405 Joey's New Girlfriend</a></li>
-    <li><a href="season/0406.html">406 The Dirty Girl</a></li>
-    <li><a href="season/0407.html">407 Chandler Crosses The Line</a></li>
-    <li><a href="season/0408.html">408 Chandler In A Box</a></li>
-    <li><a href="season/0409.html">409 They're Going To Party</a></li>
-    <li><a href="season/0410.html">410 The Girl From Poughkeepsie</a></li>
-    <li><a href="season/0411.html">411 Phoebe's Uterus</a></li>
-    <li><a href="season/0412.html">412 The Embryos</a></li>
-    <li><a href="season/0413.html">413 Rachel's Crush</a></li>
-    <li><a href="season/0414.html">414 Joey's Dirty Day</a></li>
-    <li><a href="season/0415.html">415 All The Rugby</a></li>
-    <li><a href="season/0416.html">416 The Fake Party</a></li>
-    <li><a href="season/0417.html">417 The Free Porn</a></li>
-    <li><a href="season/0418.html">418 Rachel's New Dress</a></li>
-    <li><a href="season/0419.html">419 All The Haste</a></li>
-    <li><a href="season/0420.html">420 The Wedding Dresses</a></li>
-    <li><a href="season/0421.html">421 The Invitation</a></li>
-    <li><a href="season/0422.html">422 The Worst Best Man Ever</a></li>
-    <li><a href="season/0423.html">423 Ross's Wedding</a></li>
-  </ul>
+  /* 阅读器 */
+  .reader{max-width:760px;margin:0 auto}
+  .ep-head{padding:clamp(26px,5vh,52px) 0 22px;border-bottom:1px solid var(--line);margin-bottom:26px}
+  .ep-head .code{font-family:var(--mono);font-size:12px;letter-spacing:.3em;color:var(--accent)}
+  .ep-head h2{font-size:clamp(23px,3.4vw,32px);font-weight:700;margin-top:6px;line-height:1.3}
+  .script{font-size:calc(15.5px * var(--fz,1))}
+  .ln{padding:5px 12px;margin:0 -12px;border-radius:8px;transition:background .2s}
+  .ln:hover{background:var(--accent-soft)}
+  .ln .who{font-weight:700;margin-right:2px;user-select:none}
+  .ln.scene,.ln.note{color:var(--dim)}
+  .ln.scene{text-align:center;font-style:italic;font-size:.92em;padding:14px 0 10px;letter-spacing:.02em}
+  .ln.scene::before{content:"— ";color:var(--accent)}
+  .ln.scene::after{content:" —";color:var(--accent)}
+  .ln.note{font-size:.9em;padding:3px 12px}
+  .u{color:var(--uncut);border-bottom:1px dotted var(--uncut);opacity:.92}
+  .ln.flash{animation:flash 2.4s ease}
+  @keyframes flash{0%,60%{background:var(--mark)}100%{background:transparent}}
+  mark{background:var(--mark);color:inherit;border-radius:3px;padding:0 2px}
+  .pager{display:flex;justify-content:space-between;gap:14px;margin-top:48px;padding-top:24px;border-top:1px solid var(--line)}
+  .pg{max-width:46%;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:13px 17px;transition:.2s;font-family:var(--sans)}
+  .pg:hover{border-color:var(--accent)}
+  .pg span{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--faint);margin-bottom:4px}
+  .pg b{font-size:14px;font-weight:600}
+  .pg.next{text-align:right;margin-left:auto}
 
-<h3>SEASON 5</h3>
-    <ul>
-    <li><a href="season/0501.html">501 Ross Says Rachel</a></li>
-    <li><a href="season/0502.html">502 All The Kissing</a></li>
-    <li><a href="season/0503.html">503 Hundredth</a></li>
-    <li><a href="season/0504.html">504 Phoebe Hates PBS</a></li>
-    <li><a href="season/0505.html">505 The Kips</a></li>
-    <li><a href="season/0506.html">506 The Yeti</a></li>
-    <li><a href="season/0507.html">507 Ross Moves In</a></li>
-    <li><a href="season/0508.html">508 The Thanksgiving Flashbacks</a></li>
-    <li><a href="season/0509.html">509 Ross's Sandwich</a></li>
-    <li><a href="season/0510.html">510 The Inappropriate Sister</a></li>
-    <li><a href="season/0511.html">511 All The Resulutions</a></li>
-    <li><a href="season/0512.html">512 Chandler's Work Laugh</a></li>
-    <li><a href="season/0513.html">513 Joey's Bag</a></li>
-    <li><a href="season/0514.html">514 Everybody Finds Out</a></li>
-    <li><a href="season/0515.html">515 The Girl Who Hits Joey</a></li>
-    <li><a href="season/0516.html">516 The Cop</a></li>
-    <li><a href="season/0517.html">517 Rachel's Inadvertant Kiss</a></li>
-    <li><a href="season/0518.html">518 Rachel Smokes</a></li>
-    <li><a href="season/0519.html">519 Ross Can't Flirt</a></li>
-    <li><a href="season/0520.html">520 The Ride Along</a></li>
-    <li><a href="season/0521.html">521 The Ball</a></li>
-    <li><a href="season/0522.html">522 Joey's Big Break</a></li>
-    <li><a href="season/0523.html">523 In Vegas</a></li>
-  </ul>
+  /* 搜索结果 */
+  .results{max-width:760px;margin:0 auto;padding:26px 0 40px}
+  .results .rhead{font-family:var(--sans);font-size:13.5px;color:var(--dim);margin-bottom:18px}
+  .results .rhead b{color:var(--accent)}
+  .hit{display:block;padding:11px 14px;border-radius:10px;border:1px solid var(--line);background:var(--panel);margin-bottom:9px;transition:.18s;cursor:pointer}
+  .hit:hover{border-color:var(--accent);transform:translateX(3px)}
+  .hit .src{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;color:var(--accent);margin-bottom:3px}
+  .hit .txt{font-size:14px;color:var(--ink)}
+  .hit .txt .who2{font-weight:700}
 
-<h3>SEASON 6</h3>
-    <ul>
-    <li><a href="season/0601.html">601 Vegas</a></li>
-    <li><a href="season/0602.html">602 Ross Hugs Rachel</a></li>
-    <li><a href="season/0603.html">603 Ross's Denial</a></li>
-    <li><a href="season/0604.html">604 Joey Loses His Insurance</a></li>
-    <li><a href="season/0605.html">605 Joey's Porsche</a></li>
-    <li><a href="season/0606.html">606 On The Last Night</a></li>
-    <li><a href="season/0607.html">607 Phoebe Runs</a></li>
-    <li><a href="season/0608.html">608 Ross's Teeth</a></li>
-    <li><a href="season/0609.html">609 Ross Got High</a></li>
-    <li><a href="season/0610.html">610 The Routine</a></li>
-    <li><a href="season/0611.html">611 The Apothecary Table</a></li>
-    <li><a href="season/0612.html">612 The Joke</a></li>
-    <li><a href="season/0613.html">613 Rachel's Sister</a></li>
-    <li><a href="season/0614.html">614 Chandler Can't Cry</a></li>
-    <li><a href="season/0615-0616.html">615-616 That Could Have Been, Part I &amp; II</a></li>
-    <li><a href="season/0617.html">617 Unagi</a></li>
-    <li><a href="season/0618.html">618 Ross Dates A Student</a></li>
-    <li><a href="season/0619.html">619 Joey's Fridge</a></li>
-    <li><a href="season/0620.html">620 Mac And C.H.E.E.S.E.</a></li>
-    <li><a href="season/0621.html">621 Ross Meets Elizabeth's Dad</a></li>
-    <li><a href="season/0622.html">622 Paul's The Man</a></li>
-    <li><a href="season/0623.html">623 The Ring</a></li>
-    <li><a href="season/0624.html">624 The Proposal, Part I &amp; II</a></li>
-  </ul>
-<h3>SEASON 7</h3>
-    <ul>
-    <li><a href="season/0701.html">701 Monica's Thunder</a></li>
-    <li><a href="season/0702.html">702 Rachel's Book</a></li>
-    <li><a href="season/0703.html">703 Phoebe's Cookies</a></li>
-    <li><a href="season/0704.html">704 Rachel's Assistant</a></li>
-    <li><a href="season/0705.html">705 The Engagement Picture</a></li>
-    <li><a href="season/0706.html">706 The Nap Partners</a></li>
-    <li><a href="season/0707.html">707 Ross's Library Book</a></li>
-    <li><a href="season/0708.html">708 Chandler Doesn't Like Dogs</a></li>
-    <li><a href="season/0709.html">709 All The Candy</a></li>
-    <li><a href="season/0710.html">710 The Huliday Armadillo</a></li>
-    <li><a href="season/0711.html">711 All The Cheesecakes</a></li>
-    <li><a href="season/0712.html">712 They're Up All Night</a></li>
-    <li><a href="season/0713.html">713 Rosita Dies</a></li>
-    <li><a href="season/0714.html">714 They All Turn Thirty</a></li>
-    <li><a href="season/0715.html">715 Joey's New Brain</a></li>
-    <li><a href="season/0716.html">716 The Truth About London</a></li>
-    <li><a href="season/0717.html">717 The Cheap Wedding Dress</a></li>
-    <li><a href="season/0718.html">718 Joey's Award</a></li>
-    <li><a href="season/0719.html">719 Ross And Monica's Cousin</a></li>
-    <li><a href="season/0720.html">720 Rachel's Big Kiss</a></li>
-    <li><a href="season/0721.html">721 The Vows</a></li>
-    <li><a href="season/0722.html">722 Chandler's Dad</a></li>
-    <li><a href="season/0723.html">723 Chandler And Monica's Wedding</a></li>
-    <li><a href="season/07outtakes.html">724 outtakesFriends Special: The Stuff You've Never Seen</a></li>
-  </ul>
-<h3>SEASON 8</h3>
-     <ul>
-    <li><a href="season/0801.html">801 &quot;I Do&quot;</a></li>
-    <li><a href="season/0802.html">802 The Red Sweater</a></li>
-    <li><a href="season/0803.html">803 Rachel Tells...</a></li>
-    <li><a href="season/0804.html">804 The Videotape</a></li>
-    <li><a href="season/0805.html">805 Rachel's Date</a></li>
-    <li><a href="season/0806.html">806 The Halloween Party</a></li>
-    <li><a href="season/0807.html">807 The Stain</a></li>
-    <li><a href="season/0808.html">808 The Stripper</a></li>
-    <li><a href="season/0809.html">809 The Rumor</a></li>
-    <li><a href="season/0810.html">810 Monica's Boots</a></li>
-    <li><a href="season/0811.html">811 Ross's Step Forward</a></li>
-    <li><a href="season/0812.html">812 Joey Dates Rachel</a></li>
-    <li><a href="season/0813.html">813 Chandler Takes A Bath</a></li>
-    <li><a href="season/0814.html">814 The Secret Closet</a></li>
-    <li><a href="season/0815.html">815 The Birthing Video</a></li>
-    <li><a href="season/0816.html">816 Joey Tells Rachel</a></li>
-    <li><a href="season/0817.html">817 The Tea Leaves</a></li>
-    <li><a href="season/0818.html">818 In Massapequa</a></li>
-    <li><a href="season/0819.html">819 Joey's Interview</a></li>
-    <li><a href="season/0820.html">820 The Baby Shower</a></li>
-    <li><a href="season/0821.html">821 The Cooking Class</a></li>
-    <li><a href="season/0822.html">822 Rachel Is Late</a></li>
-    <li><a href="season/0823.html">823 Rachel Has A Baby</a></li>
-  </ul>
-<h3>SEASON 9</h3>
-    <ul>
-    <li><a href="season/0901.html">901 No One Proposes</a></li>
-    <li><a href="season/0902.html">902 Emma Cries</a></li>
-    <li><a href="season/0903.html">903 The Pediatrician</a></li>
-    <li><a href="season/0904.html">904 The Sharks</a></li>
-    <li><a href="season/0905.html">905 Phoebe's Birthday Dinner</a></li>
-    <li><a href="season/0906.html">906 The Male Nanny</a></li>
-    <li><a href="season/0907.html">907 Ross's Inappropriate Song</a></li>
-    <li><a href="season/0908.html">908 Rachel's Other Sister</a></li>
-    <li><a href="season/0909.html">909 Rachel's Phone Number</a></li>
-    <li><a href="season/0910.html">910 Christmas In Tulsa</a></li>
-    <li><a href="season/0911.html">911 Rachel Goes Back To Work</a></li>
-    <li><a href="season/0912.html">912 Phoebe's Rats</a></li>
-    <li><a href="season/0913.html">913 Monica Sings</a></li>
-    <li><a href="season/0914.html">914 The Blind Dates</a></li>
-    <li><a href="season/0915.html">915 The Mugging</a></li>
-    <li><a href="season/0916.html">916 The Boob Job</a></li>
-    <li><a href="season/0917.html">917 The Memorial Service</a></li>
-    <li><a href="season/0918.html">918 The Lottery</a></li>
-    <li><a href="season/0919.html">919 Rachel's Dream</a></li>
-    <li><a href="season/0920.html">920 The Soap Opera Party</a></li>
-    <li><a href="season/0921.html">921 The Fertility Test</a></li>
-    <li><a href="season/0922.html">922 The Donor</a></li>
-    <li><a href="season/0923-0924.html">923-924 In Barbados</a></li>
-  </ul>
-<h3>SEASON 10</h3>
-    <ul>
-    <li><a href="season/1001.html">1001 Joey and Rachel Kiss</a></li>
-    <li><a href="season/1002.html">1002 Ross Is Fine</a></li>
-    <li><a href="season/1003.html">1003 Ross's Tan</a></li>
-    <li><a href="season/1004.html">1004 The Cake</a></li>
-    <li><a href="season/1005.html">1005  Rachel's Sister Babysits</a></li>
-    <li><a href="season/1006.html">1006  Ross's Grant</a></li>
-    <li><a href="season/1007.html">1007 The Home Study</a></li>
-    <li><a href="season/1008.html">1008 The Late Thanksgiving</a></li>
-    <li><a href="season/1009.html">1009 The Birth Mother</a></li>
-    <li><a href="season/1010.html">1010 Chandler Gets Caught</a></li>
-    <li><a href="season/1011.html">1011 The Stripper Cries</a></li>
-    <li><a href="season/1012.html">1012  Phoebe's Wedding</a></li>
-    <li><a href="season/1013.html">1013 Joey Speaks French</a></li>
-    <li><a href="season/1014.html">1014 Princess Consuela</a></li>
-    <li><a href="season/1015.html">1015 Estelle Dies</a></li>
-    <li><a href="season/1016.html">1016 Rachel's Going Away Party</a></li>
-    <li><a href="season/1017-1018.html">1017-1018 The Last One, Part I &amp; II</a></li>
-  </ul>
-    
-  </body>
+  .backtop{position:fixed;right:26px;bottom:26px;z-index:40;width:42px;height:42px;border-radius:50%;
+    border:1px solid var(--line);background:var(--panel);color:var(--dim);font-size:16px;opacity:0;pointer-events:none;transition:.25s}
+  .backtop.show{opacity:1;pointer-events:auto}
+  .backtop:hover{border-color:var(--accent);color:var(--accent)}
+
+  /* 角色配色 */
+  .c-monica{color:var(--c-monica)}.c-rachel{color:var(--c-rachel)}.c-phoebe{color:var(--c-phoebe)}
+  .c-ross{color:var(--c-ross)}.c-chandler{color:var(--c-chandler)}.c-joey{color:var(--c-joey)}
+  .c-other{color:var(--c-other)}
+
+  /* 响应式 */
+  @media (max-width:900px){
+    .layout{grid-template-columns:1fr}
+    .sidebar{position:fixed;left:0;top:58px;bottom:0;width:min(300px,84vw);z-index:60;transform:translateX(-102%);transition:transform .3s;box-shadow:20px 0 60px rgba(0,0,0,.25)}
+    .sidebar.show{transform:none}
+    .sidebar-toggle{display:inline-flex !important}
+  }
+  .sidebar-toggle{display:none;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--dim)}
+  .scrim{position:fixed;inset:0;top:58px;z-index:55;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:.3s}
+  .scrim.show{opacity:1;pointer-events:auto}
+  @media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="sidebar-toggle" id="sb-toggle" aria-label="剧集列表">☰</button>
+  <a class="brand" href="#" id="brand-home">
+    <b>老友记<i>·</i>台词库</b><span>FRIENDS&nbsp;SCRIPTS</span>
+  </a>
+  <div class="searchbox">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="q" type="text" placeholder="搜索任意台词，如 how you doin" autocomplete="off">
+    <span class="shint">/</span>
+  </div>
+  <div class="tools">
+    <button class="tbtn" id="fz-dec" title="缩小字号">A-</button>
+    <button class="tbtn" id="fz-inc" title="放大字号">A+</button>
+    <button class="tbtn" id="theme" title="切换明暗">☾</button>
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="scrim" id="scrim"></div>
+  <main class="main" id="main">
+    <div class="landing">
+      <img class="cover" src="cover.jpg" alt="Friends">
+      <h1>老友记 · 台词库<small>TEN&nbsp;SEASONS&nbsp;·&nbsp;ALL&nbsp;LINES</small></h1>
+      <div class="stats">
+        <div class="stat"><b>228</b><span>EPISODES</span></div>
+        <div class="stat"><b id="stat-lines">44,784</b><span>DIALOGUES</span></div>
+        <div class="stat"><b id="stat-words">882,995</b><span>WORDS</span></div>
+      </div>
+      <p class="hint">按 <kbd>/</kbd> 聚焦搜索 · <kbd>←</kbd><kbd>→</kbd> 上下集 · 六人名字各有专属配色</p>
+      <div class="season-grid" id="season-grid"></div>
+    </div>
+  </main>
+</div>
+
+<button class="backtop" id="backtop" aria-label="回到顶部">↑</button>
+
+<script>
+(() => {
+  "use strict";
+  const $ = (s) => document.querySelector(s);
+  const main = $("#main"), sidebar = $("#sidebar");
+  const SIX = { Monica:1, Rachel:1, Phoebe:1, Ross:1, Chandler:1, Joey:1 };
+  const whoClass = (w) => SIX[w] ? "c-" + w.toLowerCase() : "c-other";
+
+  let INDEX = [];
+  let flat = [];
+  const seasonCache = new Map();
+  let current = -1;
+  let corpus = null;
+
+  /* ── 主题 / 字号 ── */
+  const themeBtn = $("#theme");
+  const applyTheme = (t) => {
+    document.documentElement.dataset.theme = t;
+    themeBtn.textContent = t === "dark" ? "☀" : "☾";
+    localStorage.setItem("fs_theme", t);
+  };
+  applyTheme(localStorage.getItem("fs_theme") || "light");
+  themeBtn.addEventListener("click", () =>
+    applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark"));
+
+  let fz = +(localStorage.getItem("fs_fz") || 1);
+  const applyFz = () => { document.documentElement.style.setProperty("--fz", fz); localStorage.setItem("fs_fz", fz); };
+  applyFz();
+  $("#fz-dec").addEventListener("click", () => { fz = Math.max(.85, +(fz - .08).toFixed(2)); applyFz(); });
+  $("#fz-inc").addEventListener("click", () => { fz = Math.min(1.45, +(fz + .08).toFixed(2)); applyFz(); });
+
+  /* ── 工具 ── */
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+  const pad = (n) => String(n).padStart(2, "0");
+  const epKey = (it) => `s${it.s}e${it.e}`;
+
+  async function loadSeason(s) {
+    if (!seasonCache.has(s)) seasonCache.set(s, fetch(`data/s${pad(s)}.json`).then((r) => r.json()));
+    return seasonCache.get(s);
+  }
+
+  /* ── 侧栏 ── */
+  function buildSidebar() {
+    const byS = new Map();
+    INDEX.forEach((it, i) => {
+      if (!byS.has(it.s)) byS.set(it.s, []);
+      byS.get(it.s).push({ ...it, i });
+    });
+    let html = "";
+    for (const [s, eps] of [...byS.entries()].sort((a, b) => a[0] - b[0])) {
+      html += `<div class="season-block" data-s="${s}">
+        <div class="season-head"><span class="tri">▶</span><span class="n">S${pad(s)}</span> Season ${s}<span class="cnt">${eps.length} 集</span></div>
+        <div class="eps">${eps.map((it) =>
+          `<div class="ep" data-i="${it.i}"><span class="no">${it.e}</span><span class="t">${esc(it.t)}</span></div>`).join("")}</div>
+      </div>`;
+    }
+    sidebar.innerHTML = html;
+    sidebar.querySelectorAll(".season-head").forEach((h) =>
+      h.addEventListener("click", () => h.parentElement.classList.toggle("open")));
+    sidebar.querySelectorAll(".ep").forEach((el) =>
+      el.addEventListener("click", () => { openByI(+el.dataset.i); closeSidebar(); }));
+  }
+
+  function markActive() {
+    sidebar.querySelectorAll(".ep.on").forEach((el) => el.classList.remove("on"));
+    if (current < 0) return;
+    const el = sidebar.querySelector(`.ep[data-i="${current}"]`);
+    if (el) {
+      el.classList.add("on");
+      el.closest(".season-block").classList.add("open");
+    }
+  }
+
+  /* ── 阅读器 ── */
+  function renderScript(ep) {
+    return ep.lines.map((l, idx) => {
+      if (l.k === "scene") return `<p class="ln scene" data-i="${idx}">${esc(l.t)}</p>`;
+      if (l.k === "note") return `<p class="ln note" data-i="${idx}">${esc(l.t)}</p>`;
+      const who = `<span class="who ${whoClass(l.w)}">${esc(l.w)}:</span> `;
+      const body = l.p.map((seg) => seg[1] ? `<span class="u">${esc(seg[0])}</span>` : esc(seg[0])).join(" ");
+      return `<p class="ln" data-i="${idx}">${who}${body}</p>`;
+    }).join("\n");
+  }
+
+  async function openByI(i, focusLine) {
+    if (i < 0 || i >= flat.length) return;
+    current = i;
+    const it = flat[i];
+    const data = await loadSeason(it.s);
+    const ep = data.episodes.find((x) => String(x.e) === String(it.e));
+    if (!ep) return;
+    const prev = flat[i - 1], next = flat[i + 1];
+    main.innerHTML = `<div class="reader">
+      <div class="ep-head">
+        <div class="code">EPISODE ${it.s} × ${it.e}</div>
+        <h2>${esc(ep.t)}</h2>
+      </div>
+      <div class="script">${renderScript(ep)}</div>
+      <div class="pager">
+        ${prev ? `<a class="pg prev" href="#${epKey(it)}" data-go="${i - 1}"><span>← PREV</span><b>${esc(prev.t)}</b></a>` : "<span></span>"}
+        ${next ? `<a class="pg next" href="#${epKey(it)}" data-go="${i + 1}"><span>NEXT →</span><b>${esc(next.t)}</b></a>` : ""}
+      </div>
+    </div>`;
+    main.querySelectorAll(".pg").forEach((a) =>
+      a.addEventListener("click", (e) => { e.preventDefault(); openByI(+a.dataset.go); }));
+    markActive();
+    history.replaceState(null, "", "#" + epKey(it));
+    scrollTo({ top: 0 });
+    if (focusLine != null) {
+      const el = main.querySelector(`.ln[data-i="${focusLine}"]`);
+      if (el) { el.scrollIntoView({ block: "center" }); el.classList.add("flash"); }
+    }
+    $("#q").value = "";
+  }
+
+  /* ── 搜索 ── */
+  async function ensureCorpus(progress) {
+    if (corpus) return corpus;
+    corpus = [];
+    const seasons = [...new Set(INDEX.map((x) => x.s))].sort((a, b) => a - b);
+    for (let n = 0; n < seasons.length; n++) {
+      const data = await loadSeason(seasons[n]);
+      for (const ep of data.episodes) {
+        corpus.push({
+          s: ep.s, e: ep.e, t: ep.t,
+          lines: ep.lines.map((l, idx) => ({
+            idx, k: l.k, w: l.w || "",
+            t: l.k === "line" ? l.p.map((p) => p[0]).join(" ") : l.t,
+          })),
+        });
+      }
+      progress && progress(n + 1, seasons.length);
+    }
+    return corpus;
+  }
+
+  let searchTimer = null;
+  const qEl = $("#q");
+  qEl.addEventListener("input", () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(runSearch, 240);
+  });
+
+  async function runSearch() {
+    const q = qEl.value.trim().toLowerCase();
+    if (q.length < 2) return;
+    main.innerHTML = `<div class="results"><div class="rhead">正在载入语料…</div></div>`;
+    await ensureCorpus((n, t) => {
+      const h = main.querySelector(".rhead");
+      if (h) h.innerHTML = `正在载入语料… <b>${n}/${t}</b>`;
+    });
+    const hits = [];
+    outer:
+    for (const ep of corpus) {
+      for (const l of ep.lines) {
+        if (l.k !== "line") continue;
+        const hay = (l.w + " " + l.t).toLowerCase();
+        const at = hay.indexOf(q);
+        if (at >= 0) {
+          hits.push({ ep, l, at });
+          if (hits.length >= 300) break outer;
+        }
+      }
+    }
+    main.innerHTML = `<div class="results">
+      <div class="rhead">“${esc(q)}” 命中 <b>${hits.length}${hits.length >= 300 ? "+" : ""}</b> 条台词 · 点击跳转</div>
+      ${hits.map((h) => {
+        const before = h.l.t.slice(Math.max(0, h.at - 46), h.at);
+        const mid = h.l.t.slice(h.at, h.at + q.length);
+        const after = h.l.t.slice(h.at + q.length, h.at + q.length + 70);
+        return `<div class="hit" data-s="${h.ep.s}" data-e="${h.ep.e}" data-li="${h.l.idx}">
+          <div class="src">S${pad(h.ep.s)}·E${h.ep.e} — ${esc(h.ep.t)}</div>
+          <div class="txt"><span class="who2 ${whoClass(h.l.w)}">${esc(h.l.w)}:</span> …${esc(before)}<mark>${esc(mid)}</mark>${esc(after)}…</div>
+        </div>`;
+      }).join("")}
+    </div>`;
+    main.querySelectorAll(".hit").forEach((el) =>
+      el.addEventListener("click", () => {
+        const i = flat.findIndex((x) => x.s === +el.dataset.s && String(x.e) === el.dataset.e);
+        openByI(i, +el.dataset.li);
+      }));
+  }
+
+  /* ── 键盘 ── */
+  addEventListener("keydown", (e) => {
+    const typing = e.target.tagName === "INPUT";
+    if (e.key === "/" && !typing) { e.preventDefault(); qEl.focus(); qEl.select(); return; }
+    if (typing) return;
+    if (e.key === "ArrowLeft" && current > 0) openByI(current - 1);
+    if (e.key === "ArrowRight" && current >= 0 && current < flat.length - 1) openByI(current + 1);
+  });
+
+  /* ── 回顶 / 移动端侧栏 ── */
+  const backtop = $("#backtop");
+  addEventListener("scroll", () => backtop.classList.toggle("show", scrollY > 500), { passive: true });
+  backtop.addEventListener("click", () => scrollTo({ top: 0, behavior: "smooth" }));
+  const scrim = $("#scrim");
+  const closeSidebar = () => { sidebar.classList.remove("show"); scrim.classList.remove("show"); };
+  $("#sb-toggle").addEventListener("click", () => { sidebar.classList.toggle("show"); scrim.classList.toggle("show"); });
+  scrim.addEventListener("click", closeSidebar);
+  $("#brand-home").addEventListener("click", (e) => { e.preventDefault(); location.hash = ""; location.reload(); });
+
+  /* ── 启动 ── */
+  (async () => {
+    const r = await fetch("data/index.json");
+    INDEX = await r.json();
+    flat = INDEX.slice();
+    buildSidebar();
+    sidebar.querySelector(".season-block")?.classList.add("open");
+    // 首页十季快捷入口
+    const byS = new Map();
+    INDEX.forEach((it, i) => { if (!byS.has(it.s)) byS.set(it.s, i); });
+    $("#season-grid").innerHTML = [...byS.entries()].sort((a, b) => a[0] - b[0]).map(([s, i]) =>
+      `<div class="sg" data-i="${i}"><b>Season ${s}</b><span>${INDEX.filter((x) => x.s === s).length} EPISODES</span></div>`).join("");
+    $("#season-grid").querySelectorAll(".sg").forEach((el) =>
+      el.addEventListener("click", () => openByI(+el.dataset.i)));
+    // 深链接 #s1e1
+    const m = location.hash.match(/^#s(\d+)e([\w-]+)$/);
+    if (m) {
+      const i = flat.findIndex((x) => x.s === +m[1] && String(x.e) === m[2]);
+      if (i >= 0) openByI(i);
+    }
+  })();
+})();
+</script>
+</body>
 </html>
