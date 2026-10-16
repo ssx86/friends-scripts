@@ -1,0 +1,20 @@
+import { spawn } from "node:child_process";
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+const CHROME = "C:/Program Files/Google/Chrome/Application/chrome.exe";
+const proc = spawn(CHROME, ["--headless=new","--remote-debugging-port=9335",`--user-data-dir=${mkdtempSync(join(tmpdir(),"cdp3-"))}`,"--no-first-run","--window-size=1280,900","about:blank"],{stdio:"ignore"});
+const sleep=(ms)=>new Promise(r=>setTimeout(r,ms));
+for(let i=0;i<40;i++){try{if((await fetch("http://127.0.0.1:9335/json/version")).ok)break}catch{}await sleep(300)}
+const t=await(await fetch("http://127.0.0.1:9335/json/new?about:blank",{method:"PUT"})).json();
+const ws=new WebSocket(t.webSocketDebuggerUrl);
+await new Promise((res,rej)=>{ws.onopen=res;ws.onerror=rej});
+let seq=0;const pending=new Map();
+ws.onmessage=(ev)=>{const m=JSON.parse(ev.data);if(m.id&&pending.has(m.id)){const{res,rej}=pending.get(m.id);pending.delete(m.id);m.error?rej(new Error(JSON.stringify(m.error))):res(m.result)}};
+const send=(method,params={})=>new Promise((res,rej)=>{const id=++seq;pending.set(id,{res,rej});ws.send(JSON.stringify({id,method,params}))});
+await send("Page.enable");
+await send("Page.navigate",{url:"https://ssx86.github.io/friends-scripts/#s10e8"});
+await sleep(8000);
+const r=await send("Runtime.evaluate",{expression:`[...document.querySelectorAll('.who')].filter(w=>!w.classList.contains('c-other')).length + ' 个有色人名 / ' + document.querySelectorAll('.ln .w').length + ' 个识别单词'`,returnByValue:true});
+console.log("线上 S10E8:", r.result.value);
+proc.kill();

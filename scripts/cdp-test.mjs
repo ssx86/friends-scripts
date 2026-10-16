@@ -151,6 +151,28 @@ const colored9 = await evalJs(`[...document.querySelectorAll('.who')].filter(w=>
 check("S9E11 人名高亮", colored9 > 150, `${colored9} 个`);
 await shot("D:/workspace/cdp_s9e11.png");
 
+/* ── 7. 单词表 ── */
+await goto(`${BASE}/`);
+await evalJs("document.getElementById('vocab-btn').click()");
+await sleep(1500);
+check("词表加载", await evalJs("document.querySelectorAll('.vrow').length") >= 100, await evalJs("document.querySelectorAll('.vrow').length") + " 行");
+check("级别标签页", await evalJs("document.querySelectorAll('.vtab').length") === 8);
+await evalJs(`[...document.querySelectorAll('.vtab')].find(t=>t.textContent.includes('雅思')).click()`);
+await sleep(300);
+const ieltsRows = await evalJs("document.querySelectorAll('.vrow').length");
+check("雅思筛选", ieltsRows > 100 && ieltsRows < 1200, `${ieltsRows} 词`);
+await shot("D:/workspace/cdp_vocab.png");
+await evalJs("document.querySelector('.vrow').click()");
+for (let i = 0; i < 20; i++) {
+  await sleep(1000);
+  if (await evalJs("!!document.querySelector('.occ')")) break;
+}
+check("出处列表", await evalJs("document.querySelectorAll('.occ').length") > 10, await evalJs("document.querySelectorAll('.occ').length") + " 处");
+await evalJs("document.querySelector('.occ').click()");
+await sleep(1500);
+check("跳转到对应句", await evalJs("!!document.querySelector('.ln.flash')") && await evalJs("document.querySelectorAll('.ln').length") > 100);
+await shot("D:/workspace/cdp_vocab_jump.png");
+
 console.log("\n==== 结果:", results.filter(r => r[1]).length + "/" + results.length, "通过 ====");
 proc.kill();
 process.exit(results.every(r => r[1]) ? 0 : 1);
