@@ -156,7 +156,7 @@ await goto(`${BASE}/`);
 await evalJs("document.getElementById('vocab-btn').click()");
 await sleep(1500);
 check("词表加载", await evalJs("document.querySelectorAll('.vrow').length") >= 100, await evalJs("document.querySelectorAll('.vrow').length") + " 行");
-check("级别标签页", await evalJs("document.querySelectorAll('.vtab').length") === 8);
+check("级别标签页（含超高频）", await evalJs("document.querySelectorAll('.vtab').length") === 9);
 await evalJs(`[...document.querySelectorAll('.vtab')].find(t=>t.textContent.includes('雅思')).click()`);
 await sleep(300);
 const ieltsRows = await evalJs("document.querySelectorAll('.vrow').length");
@@ -173,6 +173,16 @@ await sleep(1500);
 check("跳转到对应句", await evalJs("!!document.querySelector('.ln.flash')") && await evalJs("document.querySelectorAll('.ln').length") > 100);
 await shot("D:/workspace/cdp_vocab_jump.png");
 
+/* ── 8. 搜索高亮对位 + 超高频词无标签 ── */
+await goto(`${BASE}/`);
+await evalJs(`(()=>{const q=document.getElementById('q');q.value='lasagna';q.dispatchEvent(new Event('input',{bubbles:true}));return true;})()`);
+for (let i = 0; i < 20; i++) { await sleep(1000); if (await evalJs("!!document.querySelector('.hit')")) break; }
+const markOK = await evalJs(`(()=>{const h=document.querySelector('.hit');if(!h)return 'no-hit';const m=h.querySelector('mark');return m ? m.textContent.toLowerCase() : 'no-mark'})()`);
+check("搜索高亮精确对位", markOK === "lasagna", `mark=[${markOK}]`);
+const basicWord = await evalJs(`(()=>{const q=document.getElementById('q');q.value='know';q.dispatchEvent(new Event('input',{bubbles:true}));return true;})()`);
+await sleep(500);
+const vocabNoTag = await evalJs(`(async()=>{document.getElementById('vocab-btn').click();await new Promise(r=>setTimeout(r,1500));const row=[...document.querySelectorAll('.vrow')].find(r=>r.dataset.w==='know');if(!row)return 'no-row';return row.textContent.includes('超高频')||!row.textContent.includes('雅思')&&!row.textContent.includes('考研')&&!row.textContent.includes('CET')? 'clean':'still-tagged'})()`);
+check("超高频词（know）无级别标签", vocabNoTag === "clean", vocabNoTag);
 console.log("\n==== 结果:", results.filter(r => r[1]).length + "/" + results.length, "通过 ====");
 proc.kill();
 process.exit(results.every(r => r[1]) ? 0 : 1);

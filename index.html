@@ -497,13 +497,19 @@
       if (h) h.innerHTML = `正在载入语料… <b>${n}/${t}</b>`;
     });
     const hits = [];
+    const findIn = (w, l) => {
+      // 先在台词内找（避免人名前缀造成偏移错位）；台词没有再匹配说话人名
+      const at = l.t.toLowerCase().indexOf(w);
+      if (at >= 0) return { at, inText: true };
+      if (l.w.toLowerCase().includes(w)) return { at: -1, inText: false };
+      return null;
+    };
     outer:
     for (const ep of corpus) {
       for (const l of ep.lines) {
         if (l.k !== "line") continue;
-        const hay = (l.w + " " + l.t).toLowerCase();
-        const at = hay.indexOf(q);
-        if (at >= 0) { hits.push({ ep, l, at }); if (hits.length >= 300) break outer; }
+        const hit = findIn(q, l);
+        if (hit) { hits.push({ ep, l, at: hit.at, inText: hit.inText }); if (hits.length >= 300) break outer; }
       }
     }
     if (!hits.length) {
@@ -516,12 +522,21 @@
     main.innerHTML = `<div class="results">
       <div class="rhead">“${esc(q)}” 命中 <b>${hits.length}${hits.length >= 300 ? "+" : ""}</b> 条台词 · 点击跳转</div>
       ${hits.map((h) => {
-        const before = h.l.t.slice(Math.max(0, h.at - 46), h.at);
-        const mid = h.l.t.slice(h.at, h.at + q.length);
-        const after = h.l.t.slice(h.at + q.length, h.at + q.length + 70);
+        const t = h.l.t;
+        let before = "", mid = "", after = "";
+        if (h.inText) {
+          before = t.slice(Math.max(0, h.at - 46), h.at);
+          mid = t.slice(h.at, h.at + q.length);
+          after = t.slice(h.at + q.length, h.at + q.length + 70);
+        } else {
+          // 匹配在说话人名上：正文从头截取
+          before = "";
+          mid = h.l.w;
+          after = t.slice(0, 96);
+        }
         return `<div class="hit" data-s="${h.ep.s}" data-e="${h.ep.e}" data-li="${h.l.idx}">
           <div class="src">S${pad(h.ep.s)}·E${h.ep.e} — ${esc(h.ep.t)}</div>
-          <div class="txt"><span class="who2 ${whoClass(h.l.w)}">${esc(h.l.w)}:</span> …${esc(before)}<mark>${esc(mid)}</mark>${esc(after)}…</div>
+          <div class="txt"><span class="who2 ${whoClass(h.l.w)}">${esc(h.l.w)}:</span> ${h.inText ? "…" + esc(before) : ""}<mark>${esc(mid)}</mark>${esc(after)}${h.inText ? "…" : "…"}</div>
         </div>`;
       }).join("")}
     </div>`;
@@ -589,12 +604,13 @@
     const defLines = def.split("\n").filter(Boolean);
     const chips = [];
     if (hit.lemmaBadge) chips.push(`<span class="chip door">${esc(hit.lemmaBadge)}</span>`);
-    if (collins) chips.push(`<span class="chip yellow">${"★".repeat(Math.min(collins, 5))}</span>`);
-    if (oxford) chips.push(`<span class="chip yellow">牛津3000</span>`);
-    for (const t of tag.split(" ")) if (TAGS[t]) chips.push(`<span class="chip">${TAGS[t]}</span>`);
+    const frqTop = frq > 0 && frq <= 5000;   // COCA 前 5000：超高频初学词，不标考试/星级
+    if (collins && !frqTop) chips.push(`<span class="chip yellow">${"★".repeat(Math.min(collins, 5))}</span>`);
+    if (oxford && !frqTop) chips.push(`<span class="chip yellow">牛津3000</span>`);
+    for (const t of tag.split(" ")) if (TAGS[t] && !frqTop) chips.push(`<span class="chip">${TAGS[t]}</span>`);
     const lvlChips = [];
-    if (bnc) lvlChips.push(`<span class="chip lvl">BNC ${bnc}</span>`);
-    if (frq) lvlChips.push(`<span class="chip lvl">COCA ${frq}</span>`);
+    if (bnc && !frqTop) lvlChips.push(`<span class="chip lvl">BNC ${bnc}</span>`);
+    if (frq && !frqTop) lvlChips.push(`<span class="chip lvl">COCA ${frq}</span>`);
     const forms = ex.split("/").filter(Boolean).map((p) => {
       const c = p.indexOf(":");
       if (c < 1) return null;
@@ -704,16 +720,16 @@
   }
 
   function renderVocab() {
-    const counts = { all: VOCAB.length };
-    for (const [, lv] of VOCAB) counts[lv] = (counts[lv] || 0) + 1;
+    const counts = { all: VOCAB.length, basic: 0 };
+    for (const [, lv] of VOCAB) { counts[lv] = (counts[lv] || 0) + 1; if (lv === "") counts.basic++; }
     const q = vQ.trim().toLowerCase();
-    const rows = VOCAB.filter(([, , lv]) => vLv === "all" || lv === vLv)
+    const rows = VOCAB.filter(([, , lv]) => vLv === "all" ? true : vLv === "basic" ? lv === "" : lv === vLv)
       .filter(([w, , , g]) => !q || w.includes(q) || (g || "").toLowerCase().includes(q));
     const shown = rows.slice(0, vShown);
     main.innerHTML = `<div class="vocab">
       <div class="vhead"><h2>单词表<i>VOCABULARY</i></h2></div>
       <div class="vsub">按全库出现次数倒序 · 点击单词查看每一处出处并跳转 · 共 ${counts.all} 个学习词（出现 ≥ 2 次）</div>
-      <div class="vtabs">${[["all", ["全部", "var(--accent)"]], ...Object.entries(LVL_META)]
+      <div class="vtabs">${[["all", ["全部", "var(--accent)"]], ...Object.entries(LVL_META), ["basic", ["超高频", "var(--faint)"]]]
         .map(([k, [label, color]]) => `<span class="vtab${k === vLv ? " on" : ""}" data-lv="${k}" style="${k === vLv ? `background:${color};border-color:${color}` : ""}">${label}<span class="n">${counts[k] || 0}</span></span>`).join("")}</div>
       <input class="vsearch" id="vq" type="text" placeholder="筛选单词或释义…" value="${esc(vQ)}" autocomplete="off">
       ${shown.map(([w, c, lv, g], i) => `
@@ -721,7 +737,7 @@
           <span class="rank">#${i + 1}</span>
           <span class="word">${esc(w)}</span>
           <span class="gloss">${esc(g || "")}</span>
-          <span class="cnt"><b>${c}</b> 次 · <span style="color:${LVL_META[lv][1]}">${LVL_META[lv][0]}</span></span>
+          <span class="cnt"><b>${c}</b> 次${lv ? ` · <span style="color:${LVL_META[lv][1]}">${LVL_META[lv][0]}</span>` : ""}</span>
         </div>`).join("")}
       ${rows.length > vShown ? `<button class="vmore" id="vmore">加载更多（${rows.length - vShown} 剩余）</button>` : ""}
       ${!rows.length ? `<div class="vsub">没有匹配的单词</div>` : ""}
@@ -764,14 +780,13 @@
         <span class="back" id="oback">← 返回词表</span>
       </div>
       ${occ.map(({ ep, l }) => {
-        const hay = (l.w + " " + l.t);
-        const at = hay.toLowerCase().indexOf(w);
-        const before = hay.slice(Math.max(0, at - 40), at);
-        const mid = hay.slice(at, at + w.length);
-        const after = hay.slice(at + w.length, at + w.length + 64);
+        const at = l.t.toLowerCase().indexOf(w);
+        const before = at >= 0 ? l.t.slice(Math.max(0, at - 40), at) : "";
+        const mid = at >= 0 ? l.t.slice(at, at + w.length) : l.w;
+        const after = at >= 0 ? l.t.slice(at + w.length, at + w.length + 64) : l.t.slice(0, 88);
         return `<div class="occ" data-s="${ep.s}" data-e="${ep.e}" data-li="${l.idx}">
           <div class="src">S${pad(ep.s)}·E${ep.e} — ${esc(ep.t)} · 第 ${l.idx + 1} 句</div>
-          <div class="txt"><span class="who2 ${whoClass(l.w)}">${esc(l.w)}:</span> …${esc(before)}<mark>${esc(mid)}</mark>${esc(after)}…</div>
+          <div class="txt"><span class="who2 ${whoClass(l.w)}">${esc(l.w)}:</span> ${at >= 0 ? "…" + esc(before) : ""}<mark>${esc(mid)}</mark>${esc(after)}…</div>
         </div>`;
       }).join("")}
     </div>`;

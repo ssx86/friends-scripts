@@ -35,7 +35,7 @@ for (const f of readdirSync(join(ROOT, "data", "dict"))) {
 }
 console.log("词典词条:", dict.size);
 
-/* ── 3. 级别归类（一个词取最高级别） ── */
+/* ── 3. 级别归类（一个词取最高级别；超高频初学词不标级别） ── */
 const LEVELS = ["gre", "toefl", "ielts", "ky", "cet6", "cet4"];
 const out = [];
 for (const [w, c] of counts) {
@@ -45,7 +45,10 @@ for (const [w, c] of counts) {
   const tags = new Set((e[6] || "").split(" "));
   let lv = "";
   for (const t of LEVELS) if (tags.has(t)) { lv = t; break; }
-  if (!lv) lv = "common";                    // 无考试标签 → 常用词
+  const frq = e[8] || 0;
+  if (!lv && !(frq && frq <= 5000)) lv = "common";   // 无考试标签且非超高频 → 常用
+  // 有考试标签但 COCA 前 5000 的超高频词（and/get/know…）：不标级别，等价于初学词
+  if (frq && frq <= 5000) lv = "";
   const gloss = (e[2] || "").split("\n")[0].replace(/^[(=][^)]*[)]\s*/, "").slice(0, 64);
   out.push([w, c, lv, gloss]);
 }
