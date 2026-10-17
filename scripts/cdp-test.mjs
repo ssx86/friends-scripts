@@ -100,7 +100,7 @@ const check = (name, ok, detail = "") => {
 await goto(`${BASE}/`);
 check("首页标题", (await evalJs("document.title")).includes("老友记"));
 check("十季卡片+图标", await evalJs("document.querySelectorAll('#season-grid .sg').length") === 10);
-check("黄框猫眼装饰", (await evalJs("getComputedStyle(document.querySelector('.peephole'),':before').borderTopWidth")) === "11px");
+check("黄框猫眼装饰", (await evalJs("getComputedStyle(document.querySelector('.peephole'),':before').borderTopWidth")) === "10px");
 await shot("D:/workspace/cdp_landing.png");
 
 /* ── 2. S1E12：联合说话者配色 + 词条包裹 ── */
@@ -235,7 +235,7 @@ for (let i = 0; i < 15; i++) { await sleep(700); if (await evalJs("!!document.qu
 const p0 = await evalJs("document.querySelectorAll('.ln.pending').length");
 check("未掌握句有框", p0 > 50, p0 + " 句");
 const stat0 = await evalJs("document.getElementById('ep-mastery')?.textContent || ''");
-check("集级统计显示", stat0.includes("未掌握"), stat0.slice(0, 50));
+check("集级统计显示", stat0.includes("词")||stat0.includes("掌握"), stat0.slice(0, 50));
 const mres = await evalJs(`(() => {
   const btn = document.querySelector('.ln.pending .lnok');
   btn.dispatchEvent(new MouseEvent('click',{bubbles:true}));

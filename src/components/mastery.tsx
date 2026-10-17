@@ -89,9 +89,19 @@ export async function applyEpisode() {
   if (head) {
     let stat = document.getElementById("ep-mastery");
     if (!stat) { stat = document.createElement("div"); stat.id = "ep-mastery"; stat.className = "mstat"; head.appendChild(stat); }
-    stat.innerHTML = pendingLines
-      ? `未掌握：<b>${remainingWords.size}</b>/<b>${totalWords.size}</b> 词 · <b>${pendingLines}</b>/<b>${totalDialogue}</b> 句 <span class="mstat-hint">（句尾 ✓ 确认两次即整句标记 · 当前账号：${getCurrentAccount()}）</span>`
-      : `✓ 全部掌握（${totalWords.size} 词 · ${totalDialogue} 句）· 账号：${getCurrentAccount()}`;
+    const wPct = totalWords.size ? Math.round((1 - remainingWords.size / totalWords.size) * 100) : 100;
+    const sPct = totalDialogue ? Math.round((1 - pendingLines / totalDialogue) * 100) : 100;
+    stat.innerHTML = `
+      <div class="mstat-bar-wrap">
+        <div class="mstat-bar"><div class="mstat-fill" style="width:${sPct}%"></div></div>
+        <span class="mstat-pct">${sPct}%</span>
+      </div>
+      <div class="mstat-detail">
+        ${pendingLines
+          ? `词 <b>${totalWords.size - remainingWords.size}</b>/<b>${totalWords.size}</b> (${wPct}%) · 句 <b>${totalDialogue - pendingLines}</b>/<b>${totalDialogue}</b> (${sPct}%) · 剩 <b>${remainingWords.size}</b> 词 <b>${pendingLines}</b> 句`
+          : `✓ 全部掌握（${totalWords.size} 词 · ${totalDialogue} 句）`}
+        <span class="mstat-hint"> · ${getCurrentAccount()}</span>
+      </div>`;
   }
   return { pendingLines, remainingWords: remainingWords.size, totalWords: totalWords.size, totalDialogue };
 }
@@ -195,9 +205,10 @@ export async function applySeasonStats() {
       chip.className = "sg-stat";
       tt.appendChild(chip);
     }
+    const pct = total ? Math.round((done / total) * 100) : 0;
     chip.innerHTML = done === total
       ? `<span class="sg-done">✓ 全掌握</span>`
-      : `<span class="sg-rem">待学 ${unWords}/${meta.words} 词 · ${total - done}/${total} 句</span>`;
+      : `<div class="sg-bar"><div class="sg-bar-fill" style="width:${pct}%"></div></div><span class="sg-rem">${pct}% · 剩 ${unWords}/${meta.words} 词 · ${total - done}/${total} 句</span>`;
   });
 }
 

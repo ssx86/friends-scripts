@@ -86,7 +86,7 @@ export function renderScript(ep, repoRoot = process.cwd()) { root = repoRoot;
     const body = typeof l.p === "string"
       ? wordify(l.p)
       : l.p.map((seg) => seg[1] ? `<span class="u">${wordify(seg[0])}</span>` : wordify(seg[0])).join(" ");
-    return `<p class="ln" id="L${idx}" data-i="${idx}">${who}${body}<button class="lnok" title="标记本句全部单词已会">✓</button></p>`;
+    return `<p class="ln" id="L${idx}" data-i="${idx}"><button class="lnok" title="标记本句全部单词已会">✓</button>${who}${body}</p>`;
   }).join("\n");
 }
 
