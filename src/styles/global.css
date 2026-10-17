@@ -397,3 +397,15 @@ body.dict-on .ln .w.simple{border-bottom:none;cursor:default}
   backdrop-filter:blur(4px)}
 .scrim.show{opacity:1;pointer-events:auto}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ── 剧集页咖啡杯：精致 SVG ── */
+.ep-cup{width:28px;height:28px;flex-shrink:0;filter:drop-shadow(0 2px 6px rgba(139,124,246,.3))}
+.ep-cup .steam{animation:steam-rise 3s ease-in-out infinite;transform-origin:bottom center}
+.ep-cup .steam.s2{animation-delay:.5s}
+.ep-cup .steam.s3{animation-delay:1s}
+@keyframes steam-rise{
+  0%,100%{opacity:.2;transform:translateY(0) scaleY(1)}
+  30%{opacity:.6;transform:translateY(-2px) scaleY(1.1)}
+  60%{opacity:.4;transform:translateY(-1px) scaleY(1.05)}
+}
+@media (prefers-reduced-motion:reduce){.ep-cup .steam{animation:none}}

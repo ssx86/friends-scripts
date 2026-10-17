@@ -91,10 +91,23 @@ export default function Chrome() {
       <button class="sidebar-toggle" id="sb-toggle" aria-label="剧集列表" data-sidebar-toggle
         onClick={() => { document.getElementById("sidebar").classList.toggle("show"); document.getElementById("scrim").classList.toggle("show"); }}>☰</button>
       <a class="brand" href={BASE}>
-        <svg class="cup" viewBox="0 0 64 64" fill="none">
-          <path d="M18 30h22v10a10 10 0 0 1-10 10h-2a10 10 0 0 1-10-10z" fill="currentColor" />
-          <path d="M40 32h4.5a5.5 5.5 0 0 1 0 11H40" stroke="currentColor" stroke-width="3.5" />
-          <path d="M24 24c0-2.5 3.5-2.5 3.5-5M32 24c0-2.5 3.5-2.5 3.5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+        <svg class="cup" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="brandCupG" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="currentColor" stop-opacity=".9"/>
+              <stop offset="1" stop-color="currentColor" stop-opacity=".6"/>
+            </linearGradient>
+          </defs>
+          <circle cx="32" cy="36" r="26" fill="currentColor" opacity=".06"/>
+          <path d="M18 26h24v16a12 12 0 0 1-12 12h0a12 12 0 0 1-12-12V26z" fill="url(#brandCupG)"/>
+          <ellipse cx="30" cy="26" rx="12" ry="3.2" fill="currentColor" opacity=".55"/>
+          <ellipse cx="30" cy="26" rx="10" ry="2.3" fill="#2a1a0e" opacity=".8"/>
+          <path d="M42 30h5a6 6 0 0 1 0 12h-5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity=".7"/>
+          <path d="M22 28v12" stroke="#fff" stroke-opacity=".12" stroke-width="2" stroke-linecap="round"/>
+          <ellipse cx="30" cy="54" rx="10" ry="2" fill="#000" opacity=".15"/>
+          <path d="M25 22c-.8-2.5 1-3.5 0-6s1.5-3 .5-5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" opacity=".5"/>
+          <path d="M31 21c-.8-2.5 1-3.5 0-6s1.5-3 .5-5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" opacity=".35"/>
+          <path d="M37 22c-.8-2.5 1-3.5 0-6s1.5-3 .5-5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" opacity=".25"/>
         </svg>
         <span class="bt"><b>老友记<i>·</i>台词库</b><span>FRIENDS SCRIPTS · CENTRAL PERK</span></span>
       </a>
