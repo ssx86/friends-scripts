@@ -30,11 +30,9 @@ function loadClassify() {
         if (CLASSIFY.has(w)) continue;
         const tags = new Set(String(e[6] || "").split(" "));
         const frq = e[8] || 0;
-        const cnt = counts.get(w) || 0;
-        const simpleHit = tags.has("zk") || tags.has("gk") || tags.has("cet4") || tags.has("cet6") || (frq > 0 && frq <= 5000);
-        const advHit = tags.has("ky") || tags.has("toefl") || tags.has("ielts") || tags.has("gre");
+        const simpleHit = tags.has("zk") || tags.has("gk") || tags.has("cet4") || tags.has("cet6") || (frq > 0 && frq <= 4000);
         if (simpleHit) CLASSIFY.set(w, "simple");
-        else if (advHit && cnt >= 10 && frq > 5000) CLASSIFY.set(w, "hard");
+        else if (frq > 4000) CLASSIFY.set(w, "hard");   // 难词 = COCA 排名 4000 以外（用户规则：无次数门槛）
       }
       // 变形共享原形分类
       for (const [form, [base]] of Object.entries(j.l)) {
