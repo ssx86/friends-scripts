@@ -86,7 +86,14 @@ function rankBar(label, rank) {
 
 function render(w) {
   const hit = lookup(w);
-  if (!hit) { hide(); return; }
+  if (!hit) {
+    // 查不到：清空面板内容 + 显示"未收录"提示（防止残留上一次的内容）
+    tip.classList.remove("complex");
+    tip.innerHTML = `<button class="x" title="收起">✕</button>
+      <div class="tw"><b>${esc(st.display)}</b></div>
+      <div class="loading" style="margin-top:10px">未收录（专名或极罕见词）</div>`;
+    return;  // 不调 hide()，让用户看到"未收录"而非面板闪烁消失
+  }
   const [ph, def, tr, , collins, oxford, tag, bnc, frq, ex] = hit.e;
   const trLines = tr.split("\n").filter(Boolean);
   const defLines = def.split("\n").filter(Boolean);

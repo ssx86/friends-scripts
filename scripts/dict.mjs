@@ -25,7 +25,7 @@ for (const f of readdirSync(join(ROOT, "data"))) {
   if (!m) continue;
   const set = new Set();
   const text = readFileSync(join(ROOT, "data", f), "utf8");
-  for (const t of text.matchAll(/[A-Za-z][A-Za-z'-]*/g)) {
+  for (const t of text.matchAll(/[A-Za-z]+(?:'[A-Za-z]+)*/g)) {
     const w = t[0].toLowerCase();
     set.add(w); allTokens.add(w);
   }

@@ -27,6 +27,7 @@
     "flexsearch": "^0.8.212",
     "gh-pages": "^6.3.0",
     "htm": "^3.1.1",
+    "impeccable": "^4.6.0",
     "preact": "^11.0.1",
     "wink-lemmatizer": "^3.0.4"
   },

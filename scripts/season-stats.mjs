@@ -5,7 +5,7 @@ import { join } from "node:path";
 const ROOT = process.cwd();
 const vocab = JSON.parse(readFileSync(join(ROOT, "data", "vocab.json"), "utf8"));
 const w2i = new Map(vocab.map((v, i) => [v[0], i]));
-const WRE = /[A-Za-z][A-Za-z'-]*/g;
+const WRE = /[A-Za-z]+(?:'[A-Za-z]+)*/g;
 
 const stats = {};
 for (const f of readdirSync(join(ROOT, "data")).filter((x) => /^s\d+\.json$/.test(x)).sort()) {

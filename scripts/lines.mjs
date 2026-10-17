@@ -13,7 +13,7 @@ const resolveLemma = (word) => {
   if (li !== undefined) return li;
   return w2i.get(word);  // 原式或不在词典的词
 };
-const WRE = /[A-Za-z][A-Za-z'-]*/g;
+const WRE = /[A-Za-z]+(?:'[A-Za-z]+)*/g;
 
 const eps = [];
 const lines = [];

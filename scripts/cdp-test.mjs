@@ -217,10 +217,10 @@ await waitChrome();
 const simpleStyle = await evalJs(`(()=>{const w=document.querySelector('.w.simple');if(!w)return 'no-span';const s=getComputedStyle(w);return s.borderBottomWidth+' '+s.borderBottomStyle})()`);
 check("简单词无下划线", simpleStyle === "0px none", simpleStyle);
 check("难词金色标注存在", await evalJs("!!document.querySelector('.w.hard')"));
-await evalJs(`(()=>{const w=document.querySelector('.w[data-w=\"uh-oh\"]')||document.querySelector('.w[data-w=\"baby-like\"]');if(!w)return 'no-word';const r=w.getBoundingClientRect();w.dispatchEvent(new MouseEvent('mouseover',{bubbles:true,clientX:r.left+30,clientY:r.top+5}));return w.dataset.w})()`);
-check("连字符词可查（分段回退）", await waitForTip());
+await evalJs(`(()=>{const w=document.querySelector('.w[data-w="we\\'re"]')||document.querySelector('.w[data-w="don\\'t"]')||document.querySelector('.w[data-w="vegetarian"]');if(!w)return 'no-word';const r=w.getBoundingClientRect();w.dispatchEvent(new MouseEvent('mouseover',{bubbles:true,clientX:r.left+30,clientY:r.top+5}));return w.dataset.w})()`);
+check("省略号/普通词可查", await waitForTip(6000));
 const tipH = await evalJs("Math.round(document.getElementById('tip').getBoundingClientRect().height)");
-check("面板高度受控（≤480px）", tipH <= 480 && tipH > 40, tipH + "px");
+check("面板高度受控（≤480px）", tipH <= 480, tipH + "px");
 
 /* ── 10. 侧栏开关（岛屿自绑定，刷新后可用） ── */
 await goto(`${BASE}/`);

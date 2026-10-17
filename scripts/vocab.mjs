@@ -15,7 +15,7 @@ for (const f of readdirSync(join(ROOT, "data"))) {
     for (const l of ep.lines) {
       if (l.w === undefined) continue;   // 只统计台词
       const text = typeof l.p === "string" ? l.p : l.p.map((p) => p[0]).join(" ");
-      for (const m of text.matchAll(/[A-Za-z][A-Za-z'-]*/g)) {
+      for (const m of text.matchAll(/[A-Za-z]+(?:'[A-Za-z]+)*/g)) {
         const w = m[0].toLowerCase();
         counts.set(w, (counts.get(w) || 0) + 1);
       }

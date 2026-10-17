@@ -14,7 +14,7 @@ export function whoClass(w) {
   return "c-other";
 }
 
-const WRE = /[A-Za-z][A-Za-z'-]*/g;
+const WRE = /[A-Za-z]+(?:'[A-Za-z]+)*/g;   // 纯字母+可选省略号（don't → don't），不含连字符（well-known → well + known）
 
 /* ── 词级分类（构建期烘焙）：简单词(中考/高考/超高频)无下划线；难且高频(≥10次且无中考四六级标签)金色 ── */
 let CLASSIFY = null;
