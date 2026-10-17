@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "node scripts/sync-data.mjs && astro dev",
     "preview": "astro preview",
-    "build": "node scripts/sync-data.mjs && astro build",
+    "build": "node scripts/sync-data.mjs && node scripts/build.mjs && node scripts/dict.mjs && node scripts/vocab.mjs && node scripts/lines.mjs && astro build",
     "deploy": "npm run build && gh-pages -d dist -b deploy --dotfiles"
   },
   "repository": {

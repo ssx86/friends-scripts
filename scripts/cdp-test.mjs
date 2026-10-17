@@ -227,6 +227,34 @@ await goto(`${BASE}/`);
 await waitChrome();
 const sbOpen = await evalJs(`(()=>{document.getElementById('sb-toggle').click();const on=document.getElementById('sidebar').classList.contains('show');document.getElementById('sb-toggle').click();return on})()`);
 check("刷新后 ☰ 可开侧栏", sbOpen === true);
+
+/* ── 11. 掌握系统 ── */
+await goto(`${BASE}/ep/s01e12/`);
+await waitChrome();
+for (let i = 0; i < 15; i++) { await sleep(700); if (await evalJs("!!document.querySelector('.ln.pending')")) break; }
+const p0 = await evalJs("document.querySelectorAll('.ln.pending').length");
+check("未掌握句有框", p0 > 50, p0 + " 句");
+const stat0 = await evalJs("document.getElementById('ep-mastery')?.textContent || ''");
+check("集级统计显示", stat0.includes("未掌握"), stat0.slice(0, 50));
+const mres = await evalJs(`(() => {
+  const btn = document.querySelector('.ln.pending .lnok');
+  btn.dispatchEvent(new MouseEvent('click',{bubbles:true}));
+  const armed = btn.classList.contains('arm');
+  btn.dispatchEvent(new MouseEvent('click',{bubbles:true}));
+  return new Promise(r=>setTimeout(()=>r({
+    armed,
+    lineDone: !btn.closest('.ln').classList.contains('pending'),
+    stored: JSON.parse(localStorage.getItem('fs_mastered')||'[]').length
+  }), 800));
+})()`);
+check("两次确认标记本句", mres.armed === true && mres.lineDone === true && mres.stored > 0, JSON.stringify(mres));
+const p1 = await evalJs("document.querySelectorAll('.ln.pending').length");
+check("全局联动（带框减少）", p1 < p0, p0 + " → " + p1);
+await goto(`${BASE}/`);
+await waitChrome();
+let hstat = "";
+for (let i = 0; i < 20; i++) { await sleep(1000); hstat = await evalJs("document.getElementById('mastery-body')?.textContent || ''"); if (hstat.includes("句") && !hstat.includes("载入")) break; }
+check("首页全局统计", hstat.includes("已掌握") && hstat.includes("未掌握"), hstat.replace(/\s+/g," ").slice(0, 60));
 await evalJs(`(()=>{const q=document.getElementById('q');q.value='';q.dispatchEvent(new Event('input',{bubbles:true}));return true})()`).catch(()=>{});
 await goto(`${BASE}/vocab/`);
 for (let k = 0; k < 15; k++) { await sleep(700); if (await evalJs("!!document.querySelector('.vrow')").catch(() => false)) break; }

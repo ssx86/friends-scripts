@@ -289,3 +289,21 @@ body{overflow-x:hidden}
   .tools{margin-left:auto;gap:6px}
   .tbtn{padding:5px 8px;font-size:11.5px}
 }
+
+/* ── 掌握系统：未掌握句框 + 句尾确认按钮 + 统计 ── */
+.ln.pending{box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--accent) 55%,transparent);border-radius:8px;background:color-mix(in srgb,var(--accent) 6%,transparent)}
+.lnok{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;margin-left:9px;border:1px solid var(--line);border-radius:6px;
+  background:var(--panel);color:var(--faint);font-size:12px;line-height:1;vertical-align:-4px;opacity:.45;transition:.18s;user-select:none}
+.ln.pending .lnok{opacity:.95;color:var(--accent);border-color:color-mix(in srgb,var(--accent) 50%,transparent)}
+.lnok:hover{opacity:1!important;color:var(--accent);border-color:var(--accent)}
+.lnok.arm{background:var(--accent);color:#fff;border-color:var(--accent);opacity:1!important;width:auto;padding:0 8px;font-size:11px}
+.mstat{font-family:var(--sans);font-size:13px;color:var(--dim);margin-top:10px}
+.mstat b{color:var(--accent);font-family:var(--serif);font-size:16px}
+#mastery{margin:42px 0 0;padding:22px 0 6px;border-top:1px solid var(--line);text-align:left}
+#mastery h2{font-family:var(--serif);font-size:21px;margin-bottom:12px}
+.mrow{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 6px;justify-content:center}
+.mchip{border:1px solid var(--line);border-radius:99px;padding:5px 14px;font-size:13px;color:var(--dim);background:var(--panel)}
+.mchip b{font-family:var(--serif);font-size:17px;color:var(--accent);margin-right:2px}
+.mreset{display:inline-block;margin-top:10px;font-family:var(--mono);font-size:11.5px;color:var(--faint);cursor:pointer;letter-spacing:.1em}
+.mreset:hover{color:var(--red)}
+.mreset.arm{color:var(--red)}

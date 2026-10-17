@@ -1,6 +1,7 @@
 // 全站交互岛屿：顶栏（搜索/工具）+ 命令式侧栏 + 词典面板 + 全局键盘
 import { useEffect, useState } from "preact/hooks";
 import { tipInit, tipHandlers, onSeason, toggleDict, dictOn, applyThemeBtn, adjustFz, esc } from "./tip.ts";
+import { applyEpisode, bindLineButtons, globalStats, levelName, levelOrder, resetMastery } from "./mastery.ts";
 
 const pad = (n) => String(n).padStart(2, "0");
 const DOTS = ["#e0603c", "#4d8a5a", "#c9722e", "#7d64ad", "#3e7ca6", "#b0483f", "#5a8a3e", "#94639c", "#3f7f8a", "#a8683a"];
@@ -39,6 +40,8 @@ export default function Chrome() {
     tipHandlers();
     const s = +(document.body.dataset.season || 0);
     if (s) onSeason(s);
+    if (s) { applyEpisode(); bindLineButtons(); }
+    else if (location.pathname === BASE || location.pathname === BASE + "index.html") renderGlobalStats();
     fetch(`${BASE}data/index.json`).then((r) => r.json()).then((idx) => {
       buildSidebar(idx);
       window.__fsIndex = idx;
@@ -99,4 +102,27 @@ export default function Chrome() {
       </div>
     </div>
   );
+}
+
+async function renderGlobalStats() {
+  const body = document.getElementById("mastery-body");
+  if (!body) return;
+  try {
+    const st = await globalStats();
+    const rows = levelOrder.filter((k) => st.per[k] > 0);
+    body.innerHTML = `
+      <div class="vsub">已掌握 ${st.done} / ${st.total} 句 · 未掌握词 ${st.unWords} 个 · 按未掌握词的最高级别归句：</div>
+      <div class="mrow">
+        ${rows.map((k) => `<span class="mchip lv-${k || "top"}"><b>${st.per[k]}</b> 句 · ${levelName(k)}</span>`).join("")}
+        ${!rows.length ? '<span class="vsub">全部掌握！</span>' : ""}
+      </div>
+      <a class="mreset" id="mreset">重置进度</a>`;
+    document.getElementById("mreset").addEventListener("click", function (this: HTMLElement) {
+      const self = this;
+      if (self.classList.contains("arm")) { resetMastery(); renderGlobalStats(); }
+      else { self.classList.add("arm"); self.textContent = "再点一次确认重置"; setTimeout(() => { self.classList.remove("arm"); self.textContent = "重置进度"; }, 3000); }
+    });
+  } catch (e) {
+    body.innerHTML = '<div class="vsub">统计载入失败：' + (e as Error).message + "</div>";
+  }
 }
