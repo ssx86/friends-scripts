@@ -106,7 +106,20 @@ export async function applyEpisode() {
   return { pendingLines, remainingWords: remainingWords.size, totalWords: totalWords.size, totalDialogue };
 }
 
-/* ── 句尾确认按钮 ── */
+/* ── 句前确认按钮（原地变色 + 通知栏） ── */
+let toastEl = null, toastTimer = null;
+function showToast(msg) {
+  if (!toastEl) {
+    toastEl = document.createElement("div");
+    toastEl.className = "notify-toast";
+    document.body.appendChild(toastEl);
+  }
+  toastEl.innerHTML = `<span class="nt-icon">✨</span>${msg}`;
+  toastEl.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2600);
+}
+
 export function bindLineButtons(onChange) {
   document.addEventListener("click", (e) => {
     const btn = e.target.closest(".lnok");
@@ -114,20 +127,24 @@ export function bindLineButtons(onChange) {
     e.preventDefault();
     if (btn.classList.contains("arm")) {
       btn.classList.remove("arm");
-      btn.textContent = "✓";
       const line = btn.closest(".ln");
       const idxs = new Set();
       for (const w of line.querySelectorAll(".w")) {
         const i = W2I.get(w.dataset.w);
         if (i !== undefined) idxs.add(i);
       }
-      markWords(idxs);
-      applyEpisode().then(() => onChange && onChange());
+      const before = applyEpisode;
+      const newWords = markWords(idxs);
+      applyEpisode().then((stats) => {
+        if (onChange) onChange();
+        // 计算消灭了多少句（本次 applyEpisode 的 pendingLines 与之前的差）
+        showToast(`已标记 ${newWords} 词 · 本句已掌握`);
+      });
     } else {
-      document.querySelectorAll(".lnok.arm").forEach((b) => { b.classList.remove("arm"); b.textContent = "✓"; });
+      // 第一步：原地变色提示（不改变宽度，不遮挡文字）
+      document.querySelectorAll(".lnok.arm").forEach((b) => b.classList.remove("arm"));
       btn.classList.add("arm");
-      btn.textContent = "确认？";
-      setTimeout(() => { if (btn.classList.contains("arm")) { btn.classList.remove("arm"); btn.textContent = "✓"; } }, 3000);
+      setTimeout(() => btn.classList.remove("arm"), 3000);
     }
   });
 }
