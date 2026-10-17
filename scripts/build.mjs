@@ -34,9 +34,9 @@ const decode = (s) =>
 // 台词本用 iso-8859-1 编码
 const readLatin1 = (f) => readFileSync(f, "latin1");
 
-// 标题清洗：去掉 "Friends - " / "FRIENDS - " / "1001 - " 之类前缀
+// 标题清洗：去掉 "Friends - " / "FRIENDS - " / "1001 - " 之类前缀，并解码 HTML 实体 + CP1252
 function cleanTitle(t) {
-  return (t || "")
+  return decode((t || ""))
     .replace(/^friends?\s*[-–—:]\s*/i, "")
     .replace(/^\d{1,4}\s*[-–—]\s*/, "")
     .replace(/^\d{1,2}\.\d{1,2}\s*[-–—]?\s*/, "")   // "10.08 The One…" 点号前缀
