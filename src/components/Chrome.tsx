@@ -2,6 +2,7 @@
 import { useEffect, useState } from "preact/hooks";
 import { tipInit, tipHandlers, onSeason, toggleDict, dictOn, applyThemeBtn, adjustFz, esc } from "./tip.ts";
 import { applyEpisode, bindLineButtons, globalStats, levelName, levelOrder, resetMastery, applySeasonStats, AccountSwitcher } from "./mastery.tsx";
+import { startFocusMode } from "./focus.tsx";
 
 const pad = (n) => String(n).padStart(2, "0");
 const DOTS = ["#e0603c", "#4d8a5a", "#c9722e", "#7d64ad", "#3e7ca6", "#b0483f", "#5a8a3e", "#94639c", "#3f7f8a", "#a8683a"];
@@ -119,6 +120,7 @@ export default function Chrome() {
       </div>
       <div class="tools">
         <AccountSwitcher />
+        <button class="tbtn" id="focus-btn" title="专注模式：逐句过一遍" onClick={() => startFocusMode()}>▶ 专注</button>
         <a class="tbtn" id="vocab-btn" href={BASE + "vocab/"} title="单词表">词表</a>
         <button class={`tbtn${dictOn() ? " on" : ""}`} id="dict-toggle" title="悬浮查词开关" onClick={(e) => toggleDict(e.currentTarget)}>{dictOn() ? "词 ON" : "词 OFF"}</button>
         <button class="tbtn" id="fz-dec" onClick={() => adjustFz(-0.08)}>A-</button>
