@@ -210,6 +210,17 @@ check("搜索高亮精确对位", markOK === "lasagna", `mark=[${markOK}]`);
 await evalJs(`(()=>{const q=document.getElementById('q');q.value='helo';q.dispatchEvent(new Event('input',{bubbles:true}));return true})()`);
 for (let i = 0; i < 25; i++) { await sleep(700); if (await evalJs("!!document.querySelector('.hit')")) break; }
 check("容错搜索（helo→hello）", await evalJs("document.querySelectorAll('.hit').length") >= 1);
+
+/* ── 9. 词级分类与面板体验 ── */
+await goto(`${BASE}/ep/s01e12/`);
+await waitChrome();
+const simpleStyle = await evalJs(`(()=>{const w=document.querySelector('.w.simple');if(!w)return 'no-span';const s=getComputedStyle(w);return s.borderBottomWidth+' '+s.borderBottomStyle})()`);
+check("简单词无下划线", simpleStyle === "0px none", simpleStyle);
+check("难词金色标注存在", await evalJs("!!document.querySelector('.w.hard')"));
+await evalJs(`(()=>{const w=document.querySelector('.w[data-w=\"uh-oh\"]')||document.querySelector('.w[data-w=\"baby-like\"]');if(!w)return 'no-word';const r=w.getBoundingClientRect();w.dispatchEvent(new MouseEvent('mouseover',{bubbles:true,clientX:r.left+30,clientY:r.top+5}));return w.dataset.w})()`);
+check("连字符词可查（分段回退）", await waitForTip());
+const tipH = await evalJs("Math.round(document.getElementById('tip').getBoundingClientRect().height)");
+check("面板高度受控（≤480px）", tipH <= 480 && tipH > 40, tipH + "px");
 await evalJs(`(()=>{const q=document.getElementById('q');q.value='';q.dispatchEvent(new Event('input',{bubbles:true}));return true})()`).catch(()=>{});
 await goto(`${BASE}/vocab/`);
 for (let k = 0; k < 15; k++) { await sleep(700); if (await evalJs("!!document.querySelector('.vrow')").catch(() => false)) break; }

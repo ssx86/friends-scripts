@@ -56,12 +56,26 @@ export function adjustFz(d) {
   document.documentElement.style.setProperty("--fz", fz);
 }
 
-function lookup(w) {
+function lookupEntry(w) {
   if (!st.DICT) return null;
   let e = st.DICT.d[w], lemmaBadge = "";
   if (!e && st.DICT.l[w]) { const [base, rel] = st.DICT.l[w]; e = st.DICT.d[base]; if (e) lemmaBadge = `${base} · ${rel}`; }
   if (!e && /'s$/.test(w)) { const b = w.replace(/'s$/, ""); e = st.DICT.d[b]; if (e) lemmaBadge = `${b} · 所有格`; }
   return e ? { e, lemmaBadge } : null;
+}
+/* 连字符组合词：整体查不到时，按段查（长段优先），命中段作为释义 */
+function lookup(w) {
+  const direct = lookupEntry(w);
+  if (direct) return direct;
+  if (!st.DICT || !/-/.test(w)) return null;
+  const bare = w.replace(/-+$/, "");
+  if (bare !== w) { const r = lookupEntry(bare); if (r) { r.lemmaBadge = (r.lemmaBadge ? r.lemmaBadge + " · " : "") + bare; return r; } }
+  const parts = w.split("-").filter(Boolean).sort((a, b) => b.length - a.length);
+  for (const p of parts) {
+    const r = lookupEntry(p);
+    if (r) { r.lemmaBadge = (r.lemmaBadge ? r.lemmaBadge + " · " : "") + w + " 的组成部分"; return r; }
+  }
+  return null;
 }
 
 function rankBar(label, rank) {

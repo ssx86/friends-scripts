@@ -162,9 +162,13 @@
   .c-other{color:var(--c-other)}
 
   /* ───── 悬浮词典 · 双模式面板 ───── */
+  body.dict-on .ln .w.simple{border-bottom:none;cursor:default}
+  .w.hard{color:var(--hard);font-weight:600}
+  [data-theme="dark"] .w.hard{color:var(--hard-dark)}
+  :root{--hard:#a16207;--hard-dark:#fbbf24}
   body.dict-on .ln .w{border-bottom:1px dotted color-mix(in srgb,currentColor 45%,transparent);cursor:help}
   #tip{
-    position:fixed;z-index:95;width:340px;
+    position:fixed;z-index:95;width:340px;max-width:92vw;max-height:min(64vh,480px);overflow-y:auto;overscroll-behavior:contain;
     background:var(--panel);border:1px solid var(--line);border-radius:14px;
     box-shadow:0 24px 60px -18px rgba(50,30,10,.5),0 4px 14px -6px rgba(50,30,10,.25);
     padding:15px 17px 12px;opacity:0;transform:translateY(5px);pointer-events:none;
@@ -250,6 +254,11 @@
   .occ .txt .who2{font-weight:700}
 
   /* 响应式 */
+  @media (max-width:640px){
+    #tip,#tip.complex{left:4vw !important;right:4vw;width:auto !important;max-width:none}
+    #tip .tr{font-size:12.5px}
+    #tip .tw b{font-size:17px}
+  }
   @media (max-width:900px){
     .layout{grid-template-columns:1fr}
     .sidebar{position:fixed;left:0;top:56px;bottom:0;width:min(300px,84vw);z-index:60;transform:translateX(-102%);transition:transform .3s;box-shadow:20px 0 60px rgba(0,0,0,.25)}
