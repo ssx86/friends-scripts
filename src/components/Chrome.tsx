@@ -136,12 +136,17 @@ async function renderGlobalStats() {
   if (!body) return;
   try {
     const st = await globalStats();
+    const gPct = st.total ? Math.round((st.done / st.total) * 100) : 0;
     const rows = levelOrder.filter((k) => st.per[k] > 0);
     body.innerHTML = `
-      <div class="vsub">已掌握 ${st.done} / ${st.total} 句 · 未掌握词 ${st.unWords} 个 · 按未掌握词的最高级别归句：</div>
+      <div class="mstat-bar-wrap" style="margin-bottom:10px">
+        <div class="mstat-bar"><div class="mstat-fill" style="width:${gPct}%"></div></div>
+        <span class="mstat-pct">${gPct}%</span>
+      </div>
+      <div class="vsub">已掌握 <b>${st.done}</b> / <b>${st.total}</b> 句 (${gPct}%) · 未掌握词 <b>${st.unWords}</b> 个</div>
       <div class="mrow">
         ${rows.map((k) => `<span class="mchip lv-${k || "top"}"><b>${st.per[k]}</b> 句 · ${levelName(k)}</span>`).join("")}
-        ${!rows.length ? '<span class="vsub">全部掌握！</span>' : ""}
+        ${!rows.length ? '<span class="vsub" style="color:var(--green)">✓ 全部掌握！</span>' : ""}
       </div>
       <a class="mreset" id="mreset">重置进度</a>`;
     document.getElementById("mreset").addEventListener("click", function (this: HTMLElement) {

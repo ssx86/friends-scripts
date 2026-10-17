@@ -450,3 +450,21 @@ body.dict-on .ln .w.simple{border-bottom:none;cursor:default}
   .focus-btn{padding:8px 18px;font-size:13px}
   .focus-acts{flex-wrap:wrap}
 }
+
+/* ── 专注模式增强：滑块 + 翻页 ── */
+.focus-nav{display:flex;align-items:center;gap:10px;margin:4px 0}
+.focus-prev,.focus-next{width:36px;height:36px;display:grid;place-items:center;border:1px solid var(--glass-border);
+  border-radius:10px;background:var(--glass-strong);color:var(--dim);font-size:16px;cursor:pointer;transition:.2s;flex-shrink:0}
+.focus-prev:hover:not(:disabled),.focus-next:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.focus-prev:disabled,.focus-next:disabled{opacity:.3;cursor:default}
+.focus-slider{flex:1;-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;background:rgba(255,255,255,.08);
+  cursor:pointer;outline:none}
+.focus-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;
+  background:var(--accent);cursor:pointer;box-shadow:0 0 8px var(--accent-glow);transition:transform .15s}
+.focus-slider::-webkit-slider-thumb:hover{transform:scale(1.3)}
+.focus-slider::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--accent);cursor:pointer;border:none}
+[data-theme="light"] .focus-slider{background:rgba(15,23,42,.08)}
+[data-theme="light"] .focus-slider::-webkit-slider-thumb{background:var(--accent)}
+/* 专注模式中 .w 词悬停查词（复用 #tip 面板） */
+#focus-mode .focus-line .w{cursor:help;border-bottom:1px dotted color-mix(in srgb,currentColor 40%,transparent)}
+#focus-mode .focus-line .w.simple{border-bottom:none;cursor:default}

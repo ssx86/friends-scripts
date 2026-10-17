@@ -1,5 +1,6 @@
-/* ── 专注模式：逐句弹窗，自动切下一句 ── */
-import { wordIdx, markWords, applyEpisode, getCurrentAccount } from "./mastery.tsx";
+/* ── 专注模式 v2：逐句弹窗 + 滑块定位 + 上下翻页 + 悬停查词 ── */
+import { wordIdx, markWords, applyEpisode } from "./mastery.tsx";
+import { esc } from "./tip.ts";
 
 let focusOverlay = null;
 let focusLines = [];
@@ -10,21 +11,30 @@ export function startFocusMode() {
   if (!lines.length) return;
   focusLines = lines;
   focusIdx = 0;
-  showFocusLine();
+  bindFocusKeys();
+  renderFocus();
 }
 
-function showFocusLine() {
-  if (focusIdx >= focusLines.length) { endFocusMode(true); return; }
+function renderFocus() {
+  if (focusIdx >= focusLines.length) focusIdx = focusLines.length - 1;
+  if (focusIdx < 0) focusIdx = 0;
   const line = focusLines[focusIdx];
-  const who = line.querySelector(".who");
+  if (!line) { endFocusMode(true); return; }
   const isPending = line.classList.contains("pending");
   const progress = `${focusIdx + 1} / ${focusLines.length}`;
+  const pct = Math.round(((focusIdx + 1) / focusLines.length) * 100);
 
   if (!focusOverlay) {
     focusOverlay = document.createElement("div");
     focusOverlay.id = "focus-mode";
     document.body.appendChild(focusOverlay);
   }
+
+  // Clone the line content, remove the ✓ button — keep .w spans for dictionary hover
+  const cloned = line.cloneNode(true);
+  const btn = cloned.querySelector(".lnok");
+  if (btn) btn.remove();
+
   focusOverlay.innerHTML = `
     <div class="focus-backdrop"></div>
     <div class="focus-card">
@@ -32,25 +42,26 @@ function showFocusLine() {
         <span class="focus-progress">${progress}</span>
         <button class="focus-close" title="退出专注模式">✕</button>
       </div>
-      <div class="focus-line ${isPending ? "pending" : "done"}">
-        ${who ? `<span class="focus-who ${who.className.replace("who ", "")}">${who.textContent}</span>` : ""}
-        <span class="focus-text">${line.textContent.replace(/^✓/, "").replace(who?.textContent || "", "").trim()}</span>
+      <div class="focus-line ${isPending ? "pending" : "done"}">${cloned.innerHTML}</div>
+      <div class="focus-nav">
+        <button class="focus-btn focus-prev" ${focusIdx === 0 ? "disabled" : ""}>←</button>
+        <input type="range" class="focus-slider" min="1" max="${focusLines.length}" value="${focusIdx + 1}" />
+        <button class="focus-btn focus-next" ${focusIdx >= focusLines.length - 1 ? "disabled" : ""}>→</button>
       </div>
       <div class="focus-acts">
         ${isPending ? `<button class="focus-btn focus-master">✓ 我会了</button>` : `<span class="focus-done-tag">已掌握</span>`}
         <button class="focus-btn focus-skip">跳过 →</button>
       </div>
-      <div class="focus-bar"><div class="focus-bar-fill" style="width:${Math.round(((focusIdx + 1) / focusLines.length) * 100)}%"></div></div>
+      <div class="focus-bar"><div class="focus-bar-fill" style="width:${pct}%"></div></div>
     </div>`;
   focusOverlay.classList.add("show");
   document.body.style.overflow = "hidden";
 
   focusOverlay.querySelector(".focus-close").addEventListener("click", () => endFocusMode(false));
   focusOverlay.querySelector(".focus-backdrop").addEventListener("click", () => endFocusMode(false));
-  focusOverlay.querySelector(".focus-skip").addEventListener("click", () => { focusIdx++; showFocusLine(); });
-  const masterBtn = focusOverlay.querySelector(".focus-master");
-  if (masterBtn) masterBtn.addEventListener("click", () => {
-    // 标记整句已会（与点 ✓ 按钮相同逻辑）
+  focusOverlay.querySelector(".focus-skip").addEventListener("click", () => { focusIdx++; renderFocus(); });
+  const master = focusOverlay.querySelector(".focus-master");
+  if (master) master.addEventListener("click", () => {
     const idxs = new Set();
     for (const w of line.querySelectorAll(".w")) {
       const i = wordIdx(w.dataset.w);
@@ -59,7 +70,27 @@ function showFocusLine() {
     markWords(idxs);
     applyEpisode();
     focusIdx++;
-    showFocusLine();
+    renderFocus();
+  });
+  const prev = focusOverlay.querySelector(".focus-prev");
+  if (prev && !prev.disabled) prev.addEventListener("click", () => { focusIdx--; renderFocus(); });
+  const next = focusOverlay.querySelector(".focus-next");
+  if (next && !next.disabled) next.addEventListener("click", () => { focusIdx++; renderFocus(); });
+  const slider = focusOverlay.querySelector(".focus-slider");
+  slider.addEventListener("change", () => { focusIdx = +slider.value - 1; renderFocus(); });
+}
+
+let keysBound = false;
+function bindFocusKeys() {
+  if (keysBound) return;
+  keysBound = true;
+  document.addEventListener("keydown", (e) => {
+    if (!focusOverlay || !focusOverlay.classList.contains("show")) return;
+    if (e.target.tagName === "INPUT" && e.target.type === "range") return;
+    if (e.key === "ArrowLeft" && focusIdx > 0) { focusIdx--; renderFocus(); }
+    if (e.key === "ArrowRight" && focusIdx < focusLines.length - 1) { focusIdx++; renderFocus(); }
+    if (e.key === "Escape") endFocusMode(false);
+    if (e.key === " ") { e.preventDefault(); focusIdx++; renderFocus(); }
   });
 }
 
@@ -70,10 +101,6 @@ function endFocusMode(completed) {
     document.body.style.overflow = "";
   }
   if (completed) {
-    // 触发通知
-    const toast = document.querySelector(".notify-toast");
-    if (toast) { toast.remove(); }
-    // 用 mastery.tsx 的 showToast 如果有导出
     const t = document.createElement("div");
     t.className = "notify-toast show";
     t.innerHTML = `<span class="nt-icon">🎉</span>专注模式完成！整集 ${focusLines.length} 句已过完`;
