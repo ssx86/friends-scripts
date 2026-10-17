@@ -221,6 +221,12 @@ await evalJs(`(()=>{const w=document.querySelector('.w[data-w=\"uh-oh\"]')||docu
 check("连字符词可查（分段回退）", await waitForTip());
 const tipH = await evalJs("Math.round(document.getElementById('tip').getBoundingClientRect().height)");
 check("面板高度受控（≤480px）", tipH <= 480 && tipH > 40, tipH + "px");
+
+/* ── 10. 侧栏开关（岛屿自绑定，刷新后可用） ── */
+await goto(`${BASE}/`);
+await waitChrome();
+const sbOpen = await evalJs(`(()=>{document.getElementById('sb-toggle').click();const on=document.getElementById('sidebar').classList.contains('show');document.getElementById('sb-toggle').click();return on})()`);
+check("刷新后 ☰ 可开侧栏", sbOpen === true);
 await evalJs(`(()=>{const q=document.getElementById('q');q.value='';q.dispatchEvent(new Event('input',{bubbles:true}));return true})()`).catch(()=>{});
 await goto(`${BASE}/vocab/`);
 for (let k = 0; k < 15; k++) { await sleep(700); if (await evalJs("!!document.querySelector('.vrow')").catch(() => false)) break; }

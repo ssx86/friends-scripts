@@ -74,7 +74,8 @@ export default function Chrome() {
 
   return (
     <div class="topbar">
-      <button class="sidebar-toggle" id="sb-toggle" aria-label="剧集列表" data-sidebar-toggle>☰</button>
+      <button class="sidebar-toggle" id="sb-toggle" aria-label="剧集列表" data-sidebar-toggle
+        onClick={() => { document.getElementById("sidebar").classList.toggle("show"); document.getElementById("scrim").classList.toggle("show"); }}>☰</button>
       <a class="brand" href={BASE}>
         <svg class="cup" viewBox="0 0 64 64" fill="none">
           <path d="M18 30h22v10a10 10 0 0 1-10 10h-2a10 10 0 0 1-10-10z" fill="currentColor" />

@@ -41,10 +41,7 @@ const { title, desc = "老友记十季 228 集全台词：即打即搜（容错�
       document.getElementById("sidebar").classList.remove("show");
       this.classList.remove("show");
     });
-    document.querySelector("[data-sidebar-toggle]")?.addEventListener("click", function () {
-      document.getElementById("sidebar").classList.toggle("show");
-      document.getElementById("scrim").classList.toggle("show");
-    });
+    // 侧栏开关由 Chrome 岛屿自己绑定（按钮是岛屿渲染的，加载期绑定会扑空）
     addEventListener("scroll", function () {
       document.getElementById("backtop").classList.toggle("show", scrollY > 500);
     }, { passive: true });
