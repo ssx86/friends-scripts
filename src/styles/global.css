@@ -227,13 +227,13 @@ mark{background:var(--mark);color:inherit;border-radius:3px;padding:0 2px}
 body.dict-on .ln .w{border-bottom:1px dotted color-mix(in srgb,currentColor 45%,transparent);cursor:help}
 body.dict-on .ln .w.simple{border-bottom:none;cursor:default}
 #tip{position:fixed;z-index:95;width:340px;max-width:92vw;max-height:min(64vh,480px);overflow-y:auto;overscroll-behavior:contain;
-  background:var(--glass-strong);border:1px solid var(--glass-border-hover);border-radius:var(--radius);
-  backdrop-filter:blur(24px) saturate(1.4);-webkit-backdrop-filter:blur(24px) saturate(1.4);
-  box-shadow:0 25px 60px -15px rgba(0,0,0,.5),0 0 40px -10px var(--accent-glow);
+  background:#1a1e2e;border:1px solid rgba(139,124,246,.3);border-radius:var(--radius);
+  box-shadow:0 25px 60px -15px rgba(0,0,0,.6),0 0 30px -8px rgba(139,124,246,.15);
   padding:15px 17px 12px;opacity:0;transform:translateY(5px);pointer-events:none;
   transition:opacity .16s,transform .16s;font-family:var(--sans)}
 #tip.show{opacity:1;transform:none;pointer-events:auto}
 #tip.complex{width:432px;max-width:94vw}
+[data-theme="light"] #tip{background:#fff;border:1px solid rgba(108,92,231,.2);box-shadow:0 25px 60px -15px rgba(0,0,0,.15),0 0 30px -8px rgba(108,92,231,.1)}
 #tip .tw{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;padding-right:22px}
 #tip .tw b{font-family:var(--display);font-size:20px;font-weight:700}
 #tip .tw .ph{font-family:var(--mono);font-size:11.5px;color:var(--accent)}
@@ -244,10 +244,14 @@ body.dict-on .ln .w.simple{border-bottom:none;cursor:default}
   background:var(--accent-glow);color:var(--accent)}
 #tip .chip.yellow{background:var(--warm-glow);color:var(--warm)}
 #tip .chip.door{background:rgba(139,124,246,.12);color:var(--accent)}
-#tip .chip.lvl{background:transparent;border:1px solid var(--glass-border);color:var(--faint)}
-#tip .tr{margin-top:9px;font-size:13px;line-height:1.7;color:var(--ink);white-space:pre-line}
-#tip .tr .rest{color:var(--dim);font-size:.94em}
-#tip .en{margin-top:8px;padding-top:8px;border-top:1px dashed var(--glass-border);font-size:11.5px;line-height:1.6;color:var(--dim);font-style:italic;white-space:pre-line}
+#tip .chip.lvl{background:transparent;border:1px solid rgba(255,255,255,.12);color:#788299}
+[data-theme="light"] #tip .chip.lvl{border-color:rgba(15,23,42,.1)}
+#tip .tr{margin-top:9px;font-size:13px;line-height:1.7;color:#f0f2f8;white-space:pre-line}
+[data-theme="light"] #tip .tr{color:#1a1d2e}
+#tip .tr .rest{color:#a0aabf;font-size:.94em}
+[data-theme="light"] #tip .tr .rest{color:#4a5068}
+#tip .en{margin-top:8px;padding-top:8px;border-top:1px dashed rgba(255,255,255,.12);font-size:11.5px;line-height:1.6;color:#a0aabf;font-style:italic;white-space:pre-line}
+[data-theme="light"] #tip .en{border-top-color:rgba(15,23,42,.1);color:#4a5068}
 #tip .sec{margin-top:10px;padding-top:9px;border-top:1px solid var(--glass-border)}
 #tip .sec .sh{font-family:var(--mono);font-size:9px;letter-spacing:.24em;color:var(--faint);margin-bottom:6px}
 #tip .forms{display:flex;flex-wrap:wrap;gap:6px}
