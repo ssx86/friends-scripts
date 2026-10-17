@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "node scripts/sync-data.mjs && astro dev",
     "preview": "astro preview",
-    "build": "node scripts/sync-data.mjs && node scripts/build.mjs && node scripts/dict.mjs && node scripts/vocab.mjs && node scripts/lines.mjs && astro build",
+    "build": "node scripts/sync-data.mjs && node scripts/build.mjs && node scripts/dict.mjs && node scripts/vocab.mjs && node scripts/lines.mjs && node scripts/season-stats.mjs && astro build",
     "deploy": "npm run build && gh-pages -d dist -b deploy --dotfiles"
   },
   "repository": {
@@ -29,5 +29,9 @@
     "htm": "^3.1.1",
     "preact": "^11.0.1",
     "wink-lemmatizer": "^3.0.4"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "tailwindcss": "^4.3.3"
   }
 }
