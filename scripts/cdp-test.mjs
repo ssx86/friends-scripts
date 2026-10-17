@@ -187,6 +187,10 @@ await evalJs(`(()=>{const q=document.getElementById('q');q.value='lasagna';q.dis
 for (let i = 0; i < 20; i++) { await sleep(1000); if (await evalJs("!!document.querySelector('.hit')")) break; }
 const markOK = await evalJs(`(()=>{const h=document.querySelector('.hit');if(!h)return 'no-hit';const m=h.querySelector('mark');return m ? m.textContent.toLowerCase() : 'no-mark'})()`);
 check("搜索高亮精确对位", markOK === "lasagna", `mark=[${markOK}]`);
+await evalJs(`(()=>{const q=document.getElementById('q');q.value='helo';q.dispatchEvent(new Event('input',{bubbles:true}));return true})()`);
+for (let i = 0; i < 25; i++) { await sleep(700); if (await evalJs("!!document.querySelector('.hit')")) break; }
+check("容错搜索（helo→hello）", await evalJs("document.querySelectorAll('.hit').length") >= 1);
+await evalJs(`(()=>{const q=document.getElementById('q');q.value='';q.dispatchEvent(new Event('input',{bubbles:true}));return true})()`);
 const basicWord = await evalJs(`(()=>{const q=document.getElementById('q');q.value='know';q.dispatchEvent(new Event('input',{bubbles:true}));return true;})()`);
 await sleep(500);
 const vocabNoTag = await evalJs(`(async()=>{document.getElementById('vocab-btn').click();await new Promise(r=>setTimeout(r,1500));const row=[...document.querySelectorAll('.vrow')].find(r=>r.dataset.w==='know');if(!row)return 'no-row';return row.textContent.includes('超高频')||!row.textContent.includes('雅思')&&!row.textContent.includes('考研')&&!row.textContent.includes('CET')? 'clean':'still-tagged'})()`);
