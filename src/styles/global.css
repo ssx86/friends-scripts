@@ -1,23 +1,4 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>老友记台词库 · Friends Scripts</title>
-<meta name="description" content="老友记十季 228 集全台词：即打即搜（容错）、阅读、角色配色、ECDICT 悬浮词典、单词表。日常英语学习工具。">
-<meta name="theme-color" content="#faf6ef">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23c9722e'/%3E%3Cpath d='M20 34h18v8a8 8 0 0 1-8 8h-2a8 8 0 0 1-8-8z' fill='%23faf6ef'/%3E%3Cpath d='M38 36h4a5 5 0 0 1 0 10h-4' fill='none' stroke='%23faf6ef' stroke-width='3'/%3E%3Cpath d='M25 28c0-2 3-2 3-4M32 28c0-2 3-2 3-4' stroke='%23faf6ef' stroke-width='2.2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
-<script type="importmap">
-{
-  "imports": {
-    "preact": "/vendor/preact.module.js",
-    "preact-hooks": "/vendor/hooks.module.js",
-    "htm": "/vendor/htm.module.js",
-    "flexsearch": "/vendor/flexsearch.module.js"
-  }
-}
-</script>
-<style>
+
   :root{
     --bg:#faf6ef; --bg2:#f3ecdf; --panel:#fffdf8;
     --ink:#2b2118; --dim:#7a6c5c; --faint:#a4968a;
@@ -280,10 +261,3 @@
   .scrim{position:fixed;inset:0;top:56px;z-index:55;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:.3s}
   .scrim.show{opacity:1;pointer-events:auto}
   @media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important}}
-</style>
-</head>
-<body>
-<div id="root"></div>
-<script type="module" src="/app/main.js"></script>
-</body>
-</html>

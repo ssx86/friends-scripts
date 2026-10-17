@@ -1,0 +1,7 @@
+---
+import Shell from "../layouts/Shell.astro";
+import VocabIsland from "../components/VocabIsland.tsx";
+---
+<Shell title="单词表 · 老友记台词库" desc="按级别（雅思/考研/CET/TOEFL/GRE）与全库词频整理的老友记学习词表，点击查看出处并跳转原句。">
+  <VocabIsland client:only="preact" />
+</Shell>

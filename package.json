@@ -4,7 +4,10 @@
   "description": "老友记台词库：<https://ssx86.github.io/friends-scripts/>",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "node scripts/sync-data.mjs && astro dev",
+    "preview": "astro preview",
+    "build": "node scripts/sync-data.mjs && astro build",
+    "deploy": "npm run build && gh-pages -d dist -b deploy --dotfiles"
   },
   "repository": {
     "type": "git",
@@ -13,13 +16,16 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "bugs": {
     "url": "https://github.com/ssx86/friends-scripts/issues"
   },
   "homepage": "https://github.com/ssx86/friends-scripts#readme",
   "devDependencies": {
+    "@astrojs/preact": "^6.1.0",
+    "astro": "^7.4.0",
     "flexsearch": "^0.8.212",
+    "gh-pages": "^6.3.0",
     "htm": "^3.1.1",
     "preact": "^11.0.1",
     "wink-lemmatizer": "^3.0.4"

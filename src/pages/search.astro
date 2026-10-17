@@ -1,0 +1,7 @@
+---
+import Shell from "../layouts/Shell.astro";
+import SearchIsland from "../components/SearchIsland.tsx";
+---
+<Shell title="搜索 · 老友记台词库" desc="61,758 句台词全文检索：支持拼写容错，↑↓ 选择，Enter 跳转到原句。">
+  <SearchIsland client:only="preact" />
+</Shell>

@@ -1,0 +1,58 @@
+---
+// 全站外壳：head + 旧链接重定向 + 交互岛屿挂载点
+import "../styles/global.css";
+import Chrome from "../components/Chrome.tsx";
+
+interface Props { title: string; desc?: string; season?: number }
+const { title, desc = "老友记十季 228 集全台词：即打即搜（容错）、阅读、角色配色、ECDICT 悬浮词典、单词表。", season } = Astro.props;
+---
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{title}</title>
+  <meta name="description" content={desc} />
+  <meta name="theme-color" content="#faf6ef" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23c9722e'/%3E%3Cpath d='M20 34h18v8a8 8 0 0 1-8 8h-2a8 8 0 0 1-8-8z' fill='%23faf6ef'/%3E%3Cpath d='M38 36h4a5 5 0 0 1 0 10h-4' fill='none' stroke='%23faf6ef' stroke-width='3'/%3E%3Cpath d='M25 28c0-2 3-2 3-4M32 28c0-2 3-2 3-4' stroke='%23faf6ef' stroke-width='2.2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E" />
+  <script>
+    // 旧 SPA 链接兼容：#s1e12 / #s1e12-L41 → /ep/s01e12/#L41
+    (function () {
+      var m = location.hash.match(/^#s(\d+)e([\w-]+)(?:-L(\d+))?$/);
+      if (m) location.replace("/ep/s" + String(+m[1]).padStart(2, "0") + "e" + m[2] + "/" + (m[3] ? "#L" + m[3] : ""));
+    })();
+  </script>
+</head>
+<body data-season={season ?? ""}>
+  <Chrome client:only="preact" season={season} />
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" data-sidebar></aside>
+    <div class="scrim" id="scrim"></div>
+    <main class="main" id="main">
+      <slot />
+    </main>
+  </div>
+  <button class="backtop" id="backtop" aria-label="回到顶部" data-backtop>
+    <svg viewBox="0 0 64 64" fill="none"><path d="M32 8c-2 8-12 10-20 8 4 4 8 6 12 6l4 26h8l4-26c4 0 8-2 12-6-8 2-18 0-20-8z" fill="currentColor" opacity=".9"/><path d="M32 48v8" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
+  </button>
+  <script>
+    // 静态部分直接原生处理：移动端侧栏开关、回顶按钮、目标句闪烁
+    document.getElementById("scrim").addEventListener("click", function () {
+      document.getElementById("sidebar").classList.remove("show");
+      this.classList.remove("show");
+    });
+    document.querySelector("[data-sidebar-toggle]")?.addEventListener("click", function () {
+      document.getElementById("sidebar").classList.toggle("show");
+      document.getElementById("scrim").classList.toggle("show");
+    });
+    addEventListener("scroll", function () {
+      document.getElementById("backtop").classList.toggle("show", scrollY > 500);
+    }, { passive: true });
+    document.getElementById("backtop").addEventListener("click", function () { scrollTo({ top: 0, behavior: "smooth" }); });
+    if (location.hash.startsWith("#L")) {
+      var el = document.getElementById(location.hash.slice(1));
+      if (el) { el.scrollIntoView({ block: "center" }); el.classList.add("flash"); }
+    }
+  </script>
+</body>
+</html>

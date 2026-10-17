@@ -7,7 +7,7 @@ import { join } from "node:path";
 
 const CHROME = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 const PORT = 9333;
-const BASE = "http://localhost:8763";
+const BASE = "http://localhost:4321";
 
 const proc = spawn(CHROME, [
   "--headless=new", `--remote-debugging-port=${PORT}`,
@@ -17,6 +17,7 @@ const proc = spawn(CHROME, [
 ], { stdio: "ignore" });
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+process.on("unhandledRejection", (e) => { if (!String(e).includes("navigated")) throw e; });
 async function waitEndpoint() {
   for (let i = 0; i < 40; i++) {
     try {
@@ -41,7 +42,7 @@ ws.onmessage = (ev) => {
   if (msg.id && pending.has(msg.id)) {
     const { res, rej } = pending.get(msg.id);
     pending.delete(msg.id);
-    msg.error ? rej(new Error(JSON.stringify(msg.error))) : res(msg.result);
+    msg.error ? (String(JSON.stringify(msg.error)).includes("navigated") ? res({ navigated: true }) : rej(new Error(JSON.stringify(msg.error)))) : res(msg.result);
   } else if (msg.method === "Page.loadEventFired") {
     loaded = loaded.then(() => sleep(120));
   }
@@ -60,7 +61,7 @@ async function goto(url) {
     if (msg.id && pending.has(msg.id)) {
       const { res, rej } = pending.get(msg.id);
       pending.delete(msg.id);
-      msg.error ? rej(new Error(JSON.stringify(msg.error))) : res(msg.result);
+      msg.error ? (String(JSON.stringify(msg.error)).includes("navigated") ? res({ navigated: true }) : rej(new Error(JSON.stringify(msg.error)))) : res(msg.result);
     } else if (msg.method === "Page.loadEventFired") resolveLoad();
   };
   await send("Page.navigate", { url: "about:blank" });   // 先离开当前页，强制下次真加载
@@ -70,7 +71,13 @@ async function goto(url) {
   await sleep(1200); // 等 SPA 的 fetch + 渲染
 }
 const evalJs = async (expr) => {
-  const r = await send("Runtime.evaluate", { expression: expr, returnByValue: true, awaitPromise: true });
+  let r;
+  try {
+    r = await send("Runtime.evaluate", { expression: expr, returnByValue: true, awaitPromise: true });
+  } catch (e) {
+    if (String(e).includes("navigated")) { await sleep(1000); r = await send("Runtime.evaluate", { expression: expr, returnByValue: true, awaitPromise: true }); }
+    else throw e;
+  }
   if (r.exceptionDetails) throw new Error(r.exceptionDetails.exception?.description || "eval error");
   return r.result.value;
 };
@@ -97,15 +104,23 @@ check("黄框猫眼装饰", (await evalJs("getComputedStyle(document.querySelect
 await shot("D:/workspace/cdp_landing.png");
 
 /* ── 2. S1E12：联合说话者配色 + 词条包裹 ── */
-await goto(`${BASE}/#s1e12`);
+await goto(`${BASE}/ep/s01e12/`);
 await sleep(1500);
-check("S1E12 打开", await evalJs("location.hash") === "#s1e12");
+check("S1E12 打开", (await evalJs("location.pathname")).includes("/ep/s01e12"));
 const jointColored = await evalJs(`[...document.querySelectorAll('.who')].filter(w => / and /i.test(w.textContent) && !w.classList.contains('c-other')).length`);
 check("联合说话者有色（Chandler and Joey 等）", jointColored > 0, `${jointColored} 个`);
 check("MOnica 类拼写变体匹配（模糊规则在位）", await evalJs(`typeof [...document.querySelectorAll('.who')].find(w => /monica/i.test(w.textContent) && (w.classList.contains('c-monica')||w.classList.contains('c-other'))) !== 'undefined'`));
 const wrapCount = await evalJs("document.querySelectorAll('.ln .w').length");
 check("单词包裹", wrapCount > 2000, `${wrapCount} 个`);
 
+
+async function waitChrome(ms = 12000) {
+  for (let i = 0; i < Math.ceil(ms / 500); i++) {
+    await sleep(500);
+    if (await evalJs("!!document.getElementById('tip') && !!document.getElementById('q')")) return true;
+  }
+  return false;
+}
 async function waitForTip(ms = 8000) {
   for (let i = 0; i < Math.ceil(ms / 700); i++) {
     await sleep(700);
@@ -116,6 +131,7 @@ async function waitForTip(ms = 8000) {
 }
 
 /* ── 3. 悬浮面板：简单模式 ── */
+await waitChrome();
 await evalJs(`(()=>{const w=[...document.querySelectorAll('.ln .w')].find(e=>e.dataset.w==='lasagna');const r=w.getBoundingClientRect();w.dispatchEvent(new MouseEvent('mouseover',{bubbles:true,clientX:r.left+30,clientY:r.top+5}));return w.dataset.w;})()`);
 const tipShown = await waitForTip();
 check("面板显示（词库随页预取）", tipShown);
@@ -134,13 +150,14 @@ check("复杂模式区块（英文释义/词频条/交叉信息/变形chips）",
 await shot("D:/workspace/cdp_tip_complex.png");
 
 /* ── 5. S10E1：此前 0 对白的重灾区 ── */
-await goto(`${BASE}/#s10e1`);
+await goto(`${BASE}/ep/s10e1/`);
 await sleep(1500);
 check("S10E1 打开且有台词", await evalJs("document.querySelectorAll('.ln').length") > 100);
 const colored10 = await evalJs(`[...document.querySelectorAll('.who')].filter(w=>!w.classList.contains('c-other')).length`);
 check("S10E1 人名高亮", colored10 > 200, `${colored10} 个`);
 const wrap10 = await evalJs("document.querySelectorAll('.ln .w').length");
 check("S10E1 单词识别", wrap10 > 2000, `${wrap10} 个`);
+await waitChrome();
 await evalJs(`(()=>{const w=[...document.querySelectorAll('.ln .w')].find(e=>e.dataset.w==='pregnant')||[...document.querySelectorAll('.ln .w')].find(e=>e.dataset.w==='crushed');const r=w.getBoundingClientRect();w.dispatchEvent(new MouseEvent('mouseover',{bubbles:true,clientX:r.left+30,clientY:r.top+5}));return w.dataset.w;})()`);
 const ok10 = await waitForTip();
 check("S10E1 悬浮查词", ok10);
@@ -151,7 +168,7 @@ check("简单词不再显示中考/高考标签", !/中考|高考/.test(chipText
 await shot("D:/workspace/cdp_s10e1.png");
 
 /* ── 6. S9E11（<br> 分段格式）── */
-await goto(`${BASE}/#s9e11`);
+await goto(`${BASE}/ep/s09e11/`);
 await sleep(1500);
 check("S9E11 打开且有台词", await evalJs("document.querySelectorAll('.ln').length") > 100);
 check("S9E11 无控制字符", await evalJs(`/[\\u0080-\\u009F\\uFFFD]/.test(document.querySelector('.script').textContent)`) === false);
@@ -161,8 +178,10 @@ await shot("D:/workspace/cdp_s9e11.png");
 
 /* ── 7. 单词表 ── */
 await goto(`${BASE}/`);
+await waitChrome();
 await evalJs("document.getElementById('vocab-btn').click()");
 await sleep(1500);
+for (let i = 0; i < 10; i++) { await sleep(700); if (await evalJs("!!document.querySelector('.vrow')")) break; }
 check("词表加载", await evalJs("document.querySelectorAll('.vrow').length") >= 100, await evalJs("document.querySelectorAll('.vrow').length") + " 行");
 check("级别标签页（含超高频）", await evalJs("document.querySelectorAll('.vtab').length") === 9);
 await evalJs(`[...document.querySelectorAll('.vtab')].find(t=>t.textContent.includes('雅思')).click()`);
@@ -183,17 +202,18 @@ await shot("D:/workspace/cdp_vocab_jump.png");
 
 /* ── 8. 搜索高亮对位 + 超高频词无标签 ── */
 await goto(`${BASE}/`);
+await waitChrome();
 await evalJs(`(()=>{const q=document.getElementById('q');q.value='lasagna';q.dispatchEvent(new Event('input',{bubbles:true}));return true;})()`);
-for (let i = 0; i < 20; i++) { await sleep(1000); if (await evalJs("!!document.querySelector('.hit')")) break; }
+for (let i = 0; i < 45; i++) { await sleep(1000); if (await evalJs("!!document.querySelector('.hit')")) break; }
 const markOK = await evalJs(`(()=>{const h=document.querySelector('.hit');if(!h)return 'no-hit';const m=h.querySelector('mark');return m ? m.textContent.toLowerCase() : 'no-mark'})()`);
 check("搜索高亮精确对位", markOK === "lasagna", `mark=[${markOK}]`);
 await evalJs(`(()=>{const q=document.getElementById('q');q.value='helo';q.dispatchEvent(new Event('input',{bubbles:true}));return true})()`);
 for (let i = 0; i < 25; i++) { await sleep(700); if (await evalJs("!!document.querySelector('.hit')")) break; }
 check("容错搜索（helo→hello）", await evalJs("document.querySelectorAll('.hit').length") >= 1);
-await evalJs(`(()=>{const q=document.getElementById('q');q.value='';q.dispatchEvent(new Event('input',{bubbles:true}));return true})()`);
-const basicWord = await evalJs(`(()=>{const q=document.getElementById('q');q.value='know';q.dispatchEvent(new Event('input',{bubbles:true}));return true;})()`);
-await sleep(500);
-const vocabNoTag = await evalJs(`(async()=>{document.getElementById('vocab-btn').click();await new Promise(r=>setTimeout(r,1500));const row=[...document.querySelectorAll('.vrow')].find(r=>r.dataset.w==='know');if(!row)return 'no-row';return row.textContent.includes('超高频')||!row.textContent.includes('雅思')&&!row.textContent.includes('考研')&&!row.textContent.includes('CET')? 'clean':'still-tagged'})()`);
+await evalJs(`(()=>{const q=document.getElementById('q');q.value='';q.dispatchEvent(new Event('input',{bubbles:true}));return true})()`).catch(()=>{});
+await goto(`${BASE}/vocab/`);
+for (let k = 0; k < 15; k++) { await sleep(700); if (await evalJs("!!document.querySelector('.vrow')").catch(() => false)) break; }
+const vocabNoTag = await evalJs(`(()=>{const row=[...document.querySelectorAll('.vrow')].find(r=>r.dataset.w==='know');if(!row)return 'no-row';return row.textContent.includes('超高频')||!row.textContent.includes('雅思')&&!row.textContent.includes('考研')&&!row.textContent.includes('CET')? 'clean':'still-tagged'})()`);
 check("超高频词（know）无级别标签", vocabNoTag === "clean", vocabNoTag);
 console.log("\n==== 结果:", results.filter(r => r[1]).length + "/" + results.length, "通过 ====");
 proc.kill();

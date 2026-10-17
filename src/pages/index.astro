@@ -1,0 +1,40 @@
+---
+import Shell from "../layouts/Shell.astro";
+import { allEpisodes, epUrl, esc } from "../lib/build.mjs";
+
+const eps = allEpisodes(process.cwd());
+const byS = new Map();
+for (const ep of eps) if (!byS.has(ep.s)) byS.set(ep.s, ep);
+const DOTS = ["#e0603c", "#4d8a5a", "#c9722e", "#7d64ad", "#3e7ca6", "#b0483f", "#5a8a3e", "#94639c", "#3f7f8a", "#a8683a"];
+const ICONS = {
+  mug: `<path d="M18 32h24v9a11 11 0 0 1-11 11h-2a11 11 0 0 1-11-11z" fill="currentColor"/><path d="M42 34h4.5a5.5 5.5 0 0 1 0 11H42" stroke="currentColor" stroke-width="3.5"/>`,
+  umbrella: `<path d="M32 9C20 9 10 18 8 29c3-2 6-2 8 0 2-2 5-2 8 0 2-2 5-2 8 0s6 2 8 0c2-2 5-2 8 0-2-11-12-20-24-20z" fill="currentColor"/><path d="M32 29v20a6 6 0 0 0 6 6" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round"/>`,
+  couch: `<path d="M12 34c0-4 3-6 6-6h28c3 0 6 2 6 6v4H12z" fill="currentColor"/><rect x="8" y="38" width="48" height="8" rx="3" fill="currentColor" opacity=".75"/><path d="M16 46v6M48 46v6" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>`,
+  frame: `<rect x="14" y="16" width="36" height="32" rx="6" fill="none" stroke="currentColor" stroke-width="5"/><circle cx="32" cy="32" r="4.5" fill="currentColor"/>`,
+  guitar: `<path d="M38 10l6 6-9 9c3 2 4 5 3 8-1.5 4.5-7 7-12 5s-7-7-5-11c1.5-3 4.5-4 7-3l10-10 0-4z" fill="currentColor" transform="translate(-4 4)"/>`,
+  heart: `<path d="M32 50C18 40 12 32 12 24a9 9 0 0 1 16-5.5A9 9 0 0 1 44 24c0 8-6 16-12 26z" fill="currentColor"/>`,
+};
+const ORDER = ["mug", "umbrella", "couch", "frame", "guitar", "heart", "mug", "umbrella", "couch", "frame"];
+const dialogues = eps.reduce((a, e) => a + e.lines.filter((l) => l.w !== undefined).length, 0);
+---
+<Shell title="老友记台词库 · Friends Scripts">
+  <div class="landing">
+    <div class="peephole"><img class="cover" src="/cover.jpg" alt="Friends" width="272" /></div>
+    <h1>老友记 · 台词库<small>TEN SEASONS · ALL LINES</small></h1>
+    <div class="stats">
+      <div class="stat"><b>228</b><span>EPISODES</span></div>
+      <div class="stat"><b>{dialogues.toLocaleString("en-US")}</b><span>DIALOGUES</span></div>
+      <div class="stat"><b>873,135</b><span>WORDS</span></div>
+    </div>
+    <p class="hint">悬停任意单词查中英释义与词频（ECDICT）· <kbd>/</kbd> 搜索台词（支持拼错）· <kbd>←</kbd><kbd>→</kbd> 上下集</p>
+    <div class="season-grid" id="season-grid">
+      {[...byS.entries()].sort((a, b) => a[0] - b[0]).map(([s, ep]) => (
+        <a class="sg" href={epUrl(s, ep.e)}>
+          <svg class="ico" viewBox="0 0 64 64" fill="none" style={`color:${DOTS[s - 1]}`} set:html={ICONS[ORDER[s - 1]]} />
+          <div class="tt"><b>Season {s}</b><span>{eps.filter((x) => x.s === s).length} EPISODES</span></div>
+        </a>
+      ))}
+    </div>
+    <p class="lyric">I'LL BE THERE FOR YOU</p>
+  </div>
+</Shell>

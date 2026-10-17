@@ -1,0 +1,37 @@
+---
+import Shell from "../../layouts/Shell.astro";
+import { allEpisodes, renderScript, epUrl, esc } from "../../lib/build.mjs";
+
+export function getStaticPaths() {
+  const eps = allEpisodes(process.cwd());
+  return eps.map((ep) => ({
+    params: { id: `s${String(ep.s).padStart(2, "0")}e${ep.e}` },
+    props: { ep },
+  }));
+}
+const { ep } = Astro.props;
+const eps = allEpisodes(process.cwd());
+const i = eps.findIndex((x) => x.s === ep.s && String(x.e) === String(ep.e));
+const prev = eps[i - 1], next = eps[i + 1];
+const dialogues = ep.lines.filter((l) => l.w !== undefined).length;
+---
+<Shell title={`${ep.t} (S${ep.s}×${ep.e}) · 老友记台词库`} desc={`老友记 S${ep.s}×${ep.e} ${ep.t} 全台词（${dialogues} 句）：可悬停查词、跳句定位。`} season={ep.s}>
+  <div class="reader">
+    <div class="ep-head">
+      <div class="code">
+        <svg viewBox="0 0 64 64" fill="none"><path d="M14 36h24v8a10 10 0 0 1-10 10h-4a10 10 0 0 1-10-10z" fill="currentColor"/><path d="M38 38h4a5 5 0 0 1 0 10h-4" stroke="currentColor" stroke-width="3"/></svg>
+        EPISODE {ep.s} × {ep.e}
+      </div>
+      <h2>{ep.t}</h2>
+    </div>
+    <article class="script" set:html={renderScript(ep)} />
+    <div class="pager">
+      {prev ? (
+        <a class="pg prev" href={epUrl(prev.s, prev.e)}><span>← PREV</span><b>{prev.t}</b></a>
+      ) : <span></span>}
+      {next ? (
+        <a class="pg next" href={epUrl(next.s, next.e)}><span>NEXT →</span><b>{next.t}</b></a>
+      ) : null}
+    </div>
+  </div>
+</Shell>

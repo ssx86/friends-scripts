@@ -1,2 +1,4 @@
 ecdict.csv
 node_modules/
+dist/
+.astro/
