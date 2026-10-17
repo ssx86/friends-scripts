@@ -28,15 +28,26 @@ export function addAccount(name: string) { switchAccount(name); }
 
 /* ── 数据层 ── */
 let VOCAB = null;
-let W2I = null;
+let W2I = null;              // word → 原式 vocab 索引
+let LEMMAS = null;           // 词形字符串 → 原式索引（同根归并）
 let MASTERED = null;
 
+let initPromise = null;
 export async function initMastery() {
-  if (W2I && MASTERED) return;
-  VOCAB = await (await fetch(`${BASE}data/vocab.json`)).json();
-  W2I = new Map(VOCAB.map((v, i) => [v[0], i]));
-  const raw = localStorage.getItem(masteredKey()) || "[]";
-  MASTERED = new Set(JSON.parse(raw));
+  if (W2I && MASTERED && LEMMAS) return;
+  if (initPromise) return initPromise;   // 防并发：多次调用共享同一个 Promise
+  initPromise = (async () => {
+    const [vocabData, lemmaData] = await Promise.all([
+      fetch(`${BASE}data/vocab.json`).then((r) => r.json()),
+      fetch(`${BASE}data/lemma-map.json`).then((r) => r.json()).catch(() => ({})),
+    ]);
+    VOCAB = vocabData;
+    W2I = new Map(VOCAB.map((v, i) => [v[0], i]));
+    LEMMAS = lemmaData;
+    const raw = localStorage.getItem(masteredKey()) || "[]";
+    MASTERED = new Set(JSON.parse(raw));
+  })();
+  return initPromise;
 }
 
 export function reloadMastery() {
@@ -45,7 +56,11 @@ export function reloadMastery() {
 
 export const masteredCount = () => MASTERED ? MASTERED.size : 0;
 export function isMasteredIdx(i) { return MASTERED.has(i); }
-export function wordIdx(w) { return W2I.get(w); }
+/* 词根归并查词：词形 → 原式索引（"went" 和 "goes" 都指向 "go" 的索引） */
+export function wordIdx(w) {
+  if (LEMMAS && LEMMAS[w] !== undefined) return LEMMAS[w];
+  return W2I.get(w);
+}
 
 export function markWords(idxs) {
   let added = 0;
@@ -72,7 +87,7 @@ export async function applyEpisode() {
     totalDialogue++;
     const un = new Set();
     for (const w of words) {
-      const i = W2I.get(w.dataset.w);
+      const i = wordIdx(w.dataset.w);
       if (i === undefined) continue;
       totalWords.add(i);
       if (!MASTERED.has(i)) un.add(i);
@@ -148,7 +163,7 @@ export function bindLineButtons(onChange) {
       const line = btn.closest(".ln");
       const idxs = new Set();
       for (const w of line.querySelectorAll(".w")) {
-        const i = W2I.get(w.dataset.w);
+        const i = wordIdx(w.dataset.w);
         if (i !== undefined) idxs.add(i);
       }
       // 标记前的本集剩余
@@ -271,7 +286,7 @@ export function clearCurrentAccount() {
 export function unmarkSentence(lineEl) {
   const idxs = new Set();
   for (const w of lineEl.querySelectorAll(".w")) {
-    const i = W2I.get(w.dataset.w);
+    const i = wordIdx(w.dataset.w);
     if (i !== undefined) idxs.add(i);
   }
   for (const i of idxs) MASTERED.delete(i);
