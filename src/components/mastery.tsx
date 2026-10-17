@@ -117,7 +117,7 @@ function showToast(msg) {
   toastEl.innerHTML = `<span class="nt-icon">✨</span>${msg}`;
   toastEl.classList.add("show");
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2600);
+  toastTimer = setTimeout(() => toastEl.classList.remove("show"), 4000);
 }
 
 export function bindLineButtons(onChange) {
@@ -133,15 +133,20 @@ export function bindLineButtons(onChange) {
         const i = W2I.get(w.dataset.w);
         if (i !== undefined) idxs.add(i);
       }
-      const before = applyEpisode;
+      // 标记前的本集剩余
+      const beforeLines = document.querySelectorAll(".ln.pending").length;
       const newWords = markWords(idxs);
-      applyEpisode().then((stats) => {
+      applyEpisode().then(async (stats) => {
         if (onChange) onChange();
-        // 计算消灭了多少句（本次 applyEpisode 的 pendingLines 与之前的差）
-        showToast(`已标记 ${newWords} 词 · 本句已掌握`);
+        // 本集消灭的句子数 = 之前带框的 - 现在带框的（含全局联动消掉的）
+        const afterLines = document.querySelectorAll(".ln.pending").length;
+        const killedLines = beforeLines - afterLines;
+        // 全局统计（10 季总进度）
+        const g = await globalStats();
+        const gPct = g.total ? Math.round((g.done / g.total) * 100) : 0;
+        showToast(`标记 ${newWords} 词 · 消灭 ${killedLines} 句 · 全站 ${g.done}/${g.total} 句 (${gPct}%)`);
       });
     } else {
-      // 第一步：原地变色提示（不改变宽度，不遮挡文字）
       document.querySelectorAll(".lnok.arm").forEach((b) => b.classList.remove("arm"));
       btn.classList.add("arm");
       setTimeout(() => btn.classList.remove("arm"), 3000);
