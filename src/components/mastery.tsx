@@ -121,6 +121,24 @@ function showToast(msg) {
 }
 
 export function bindLineButtons(onChange) {
+  let longPressTimer = null;
+  document.addEventListener("touchstart", (e) => {
+    const btn = e.target.closest(".lnok");
+    if (!btn) return;
+    longPressTimer = setTimeout(() => {
+      longPressTimer = null;
+      unmarkSentence(btn.closest(".ln"));
+    }, 600);
+  }, { passive: true });
+  document.addEventListener("touchend", () => clearTimeout(longPressTimer), { passive: true });
+  document.addEventListener("touchmove", () => clearTimeout(longPressTimer), { passive: true });
+  document.addEventListener("contextmenu", (e) => {
+    const btn = e.target.closest(".lnok");
+    if (!btn) return;
+    e.preventDefault();
+    unmarkSentence(btn.closest(".ln"));
+  });
+
   document.addEventListener("click", (e) => {
     const btn = e.target.closest(".lnok");
     if (!btn) return;
@@ -234,15 +252,45 @@ export async function applySeasonStats() {
   });
 }
 
-/* ── 账号切换 UI（shadcn 风格 Drop-down） ── */
+/* ── 账号管理函数 ── */
+export function deleteAccount(name) {
+  localStorage.removeItem(`fs_mastered:${name}`);
+  localStorage.removeItem(name === "default" ? "fs_mastered" : `fs_mastered:${name}`);
+  const rest = getAccounts().filter((a) => a !== name);
+  localStorage.setItem("fs_accounts", JSON.stringify(rest));
+  if (getCurrentAccount() === name) {
+    localStorage.setItem("fs_current_account", "default");
+  }
+}
+export function clearCurrentAccount() {
+  localStorage.removeItem(masteredKey());
+  MASTERED = new Set();
+}
+
+/* ── 取消标记（逆向操作）── */
+export function unmarkSentence(lineEl) {
+  const idxs = new Set();
+  for (const w of lineEl.querySelectorAll(".w")) {
+    const i = W2I.get(w.dataset.w);
+    if (i !== undefined) idxs.add(i);
+  }
+  for (const i of idxs) MASTERED.delete(i);
+  localStorage.setItem(masteredKey(), JSON.stringify([...MASTERED]));
+  applyEpisode();
+  showToast(`已取消 ${idxs.size} 词的标记`);
+}
+
+/* ── 账号切换 UI ── */
 export function AccountSwitcher() {
   const [accounts, setAccounts] = useState(getAccounts());
   const [current, setCurrent] = useState(getCurrentAccount());
   const [open, setOpen] = useState(false);
   const [newName, setNewName] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState(null);
+  const [confirmClear, setConfirmClear] = useState(false);
 
   useEffect(() => {
-    const close = () => setOpen(false);
+    const close = () => { setOpen(false); setConfirmDelete(null); setConfirmClear(false); };
     document.addEventListener("click", close);
     return () => document.removeEventListener("click", close);
   }, []);
@@ -252,7 +300,7 @@ export function AccountSwitcher() {
     setCurrent(name);
     setAccounts(getAccounts());
     reloadMastery();
-    location.reload();  // 全页刷新重算所有统计
+    location.reload();
   };
 
   const doAdd = () => {
@@ -261,9 +309,32 @@ export function AccountSwitcher() {
     setNewName("");
   };
 
+  const doDelete = (name) => {
+    if (confirmDelete === name) {
+      deleteAccount(name);
+      setAccounts(getAccounts());
+      setConfirmDelete(null);
+      if (getCurrentAccount() === name) location.reload();
+    } else {
+      setConfirmDelete(name);
+      setTimeout(() => setConfirmDelete(null), 3000);
+    }
+  };
+
+  const doClear = () => {
+    if (confirmClear) {
+      clearCurrentAccount();
+      setConfirmClear(false);
+      location.reload();
+    } else {
+      setConfirmClear(true);
+      setTimeout(() => setConfirmClear(false), 3000);
+    }
+  };
+
   return (
     <div class="acct-wrap" onClick={(e) => e.stopPropagation()}>
-      <button class="acct-btn" onClick={() => setOpen(!open)}>
+      <button class="acct-btn" onClick={() => { if (!open) { setAccounts(getAccounts()); setCurrent(getCurrentAccount()); } setOpen(!open); }}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
         </svg>
@@ -275,9 +346,17 @@ export function AccountSwitcher() {
       {open && (
         <div class="acct-menu">
           {accounts.map((a) => (
-            <button key={a} class={`acct-item${a === current ? " active" : ""}`} onClick={() => doSwitch(a)}>
-              {a === current ? "✓ " : ""}{a}
-            </button>
+            <div key={a} class="acct-row">
+              <button class={`acct-item${a === current ? " active" : ""}`} onClick={() => a !== current && doSwitch(a)}>
+                {a === current ? "✓ " : ""}{a}
+              </button>
+              {accounts.length > 1 && (
+                <button class="acct-del" title={confirmDelete === a ? "再点一次确认删除" : "删除此账号"}
+                  onClick={() => doDelete(a)}>
+                  {confirmDelete === a ? "确认？" : "×"}
+                </button>
+              )}
+            </div>
           ))}
           <div class="acct-add">
             <input type="text" placeholder="新账号名…" value={newName}
@@ -285,6 +364,10 @@ export function AccountSwitcher() {
               onKeyDown={(e) => e.key === "Enter" && doAdd()} />
             <button onClick={doAdd}>+</button>
           </div>
+          <div class="acct-sep"></div>
+          <button class="acct-item acct-clear" onClick={doClear}>
+            {confirmClear ? "⚠ 再点一次确认清空" : "清空当前账号数据"}
+          </button>
         </div>
       )}
     </div>

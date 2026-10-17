@@ -40,7 +40,18 @@ export default function Chrome() {
     tipHandlers();
     const s = +(document.body.dataset.season || 0);
     if (s) onSeason(s);
-    if (s) { applyEpisode(); bindLineButtons(); }
+    if (s) {
+      applyEpisode().then((st) => {
+        // sticky mini progress bar
+        if (st && st.totalDialogue) {
+          let mini = document.getElementById("mini-progress");
+          if (!mini) { mini = document.createElement("div"); mini.id = "mini-progress"; mini.className = "mini-progress"; mini.innerHTML = '<div class="mini-fill"></div>'; document.body.appendChild(mini); }
+          const pct = Math.round((1 - st.pendingLines / st.totalDialogue) * 100);
+          (mini.querySelector(".mini-fill")).style.width = pct + "%";
+        }
+      });
+      bindLineButtons();
+    }
     else if (location.pathname === BASE || location.pathname === BASE + "index.html") { renderGlobalStats(); applySeasonStats(); }
     fetch(`${BASE}data/index.json`).then((r) => r.json()).then((idx) => {
       buildSidebar(idx);
