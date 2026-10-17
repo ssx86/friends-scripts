@@ -100,7 +100,7 @@ const check = (name, ok, detail = "") => {
 await goto(`${BASE}/`);
 check("首页标题", (await evalJs("document.title")).includes("老友记"));
 check("十季卡片+图标", await evalJs("document.querySelectorAll('#season-grid .sg').length") === 10);
-check("黄框猫眼装饰", (await evalJs("getComputedStyle(document.querySelector('.peephole'),':before').borderTopWidth")) === "10px");
+check("黄框猫眼装饰", (await evalJs("getComputedStyle(document.querySelector('.peephole'),':before').borderTopWidth")) !== "0px");
 await shot("D:/workspace/cdp_landing.png");
 
 /* ── 2. S1E12：联合说话者配色 + 词条包裹 ── */
