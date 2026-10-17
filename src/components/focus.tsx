@@ -1,4 +1,4 @@
-/* ── 专注模式 v2：逐句弹窗 + 滑块定位 + 上下翻页 + 悬停查词 ── */
+/* ── 专注模式 v3：纯文本句子 + 滑块 + 翻页（无查词） ── */
 import { wordIdx, markWords, applyEpisode } from "./mastery.tsx";
 import { esc } from "./tip.ts";
 
@@ -7,7 +7,7 @@ let focusLines = [];
 let focusIdx = 0;
 
 export function startFocusMode() {
-  const lines = [...document.querySelectorAll(".ln")].filter((l) => l.querySelector(".w"));
+  const lines = [...document.querySelectorAll(".ln")].filter((l) => l.querySelector(".who"));
   if (!lines.length) return;
   focusLines = lines;
   focusIdx = 0;
@@ -15,12 +15,23 @@ export function startFocusMode() {
   renderFocus();
 }
 
+function getLineData(line) {
+  const whoEl = line.querySelector(".who");
+  const who = whoEl ? whoEl.textContent.replace(/:\s*$/, "") : "";
+  const whoCls = whoEl ? whoEl.className.replace("who ", "") : "";
+  // 纯文本：取 who 后面的所有文本内容
+  let text = line.textContent || "";
+  if (whoEl) text = text.replace(whoEl.textContent, "").replace(/^✓/, "").trim();
+  else text = text.replace(/^✓/, "").trim();
+  return { who, whoCls, text, isPending: line.classList.contains("pending") };
+}
+
 function renderFocus() {
   if (focusIdx >= focusLines.length) focusIdx = focusLines.length - 1;
   if (focusIdx < 0) focusIdx = 0;
   const line = focusLines[focusIdx];
   if (!line) { endFocusMode(true); return; }
-  const isPending = line.classList.contains("pending");
+  const { who, whoCls, text, isPending } = getLineData(line);
   const progress = `${focusIdx + 1} / ${focusLines.length}`;
   const pct = Math.round(((focusIdx + 1) / focusLines.length) * 100);
 
@@ -30,11 +41,6 @@ function renderFocus() {
     document.body.appendChild(focusOverlay);
   }
 
-  // Clone the line content, remove the ✓ button — keep .w spans for dictionary hover
-  const cloned = line.cloneNode(true);
-  const btn = cloned.querySelector(".lnok");
-  if (btn) btn.remove();
-
   focusOverlay.innerHTML = `
     <div class="focus-backdrop"></div>
     <div class="focus-card">
@@ -42,11 +48,18 @@ function renderFocus() {
         <span class="focus-progress">${progress}</span>
         <button class="focus-close" title="退出专注模式">✕</button>
       </div>
-      <div class="focus-line ${isPending ? "pending" : "done"}">${cloned.innerHTML}</div>
+      <div class="focus-line ${isPending ? "pending" : "done"}">
+        ${who ? `<span class="focus-who ${whoCls}">${esc(who)}:</span>` : ""}
+        <span class="focus-text">${esc(text)}</span>
+      </div>
       <div class="focus-nav">
-        <button class="focus-btn focus-prev" ${focusIdx === 0 ? "disabled" : ""}>←</button>
+        <button class="focus-arrow focus-prev" ${focusIdx === 0 ? "disabled" : ""} title="上一句">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
         <input type="range" class="focus-slider" min="1" max="${focusLines.length}" value="${focusIdx + 1}" />
-        <button class="focus-btn focus-next" ${focusIdx >= focusLines.length - 1 ? "disabled" : ""}>→</button>
+        <button class="focus-arrow focus-next" ${focusIdx >= focusLines.length - 1 ? "disabled" : ""} title="下一句">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
       </div>
       <div class="focus-acts">
         ${isPending ? `<button class="focus-btn focus-master">✓ 我会了</button>` : `<span class="focus-done-tag">已掌握</span>`}

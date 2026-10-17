@@ -40,6 +40,8 @@ export default function Chrome() {
     tipInit();
     tipHandlers();
     const s = +(document.body.dataset.season || 0);
+    const fb = document.getElementById('focus-btn');
+    if (fb) fb.style.display = s ? '' : 'none';
     if (s) onSeason(s);
     if (s) {
       applyEpisode().then((st) => {
@@ -120,7 +122,7 @@ export default function Chrome() {
       </div>
       <div class="tools">
         <AccountSwitcher />
-        <button class="tbtn" id="focus-btn" title="专注模式：逐句过一遍" onClick={() => startFocusMode()}>▶ 专注</button>
+        <button class="tbtn hidden-if-not-ep" id="focus-btn" title="专注模式：逐句过一遍" onClick={() => startFocusMode()}>▶ 专注</button>
         <a class="tbtn" id="vocab-btn" href={BASE + "vocab/"} title="单词表">词表</a>
         <button class={`tbtn${dictOn() ? " on" : ""}`} id="dict-toggle" title="悬浮查词开关" onClick={(e) => toggleDict(e.currentTarget)}>{dictOn() ? "词 ON" : "词 OFF"}</button>
         <button class="tbtn" id="fz-dec" onClick={() => adjustFz(-0.08)}>A-</button>
