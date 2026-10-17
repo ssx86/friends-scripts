@@ -8,6 +8,7 @@ const st = { on: !hasLS || localStorage.getItem("fs_dict") !== "0", DICT: null, 
 
 export const dictOn = () => st.on;
 
+const BASE = import.meta.env.BASE_URL || "/";
 export const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const pad = (n) => String(n).padStart(2, "0");
 
@@ -15,7 +16,7 @@ function prefetch(s) {
   if (st.season === s && st.DICT) return;
   if (st.season === s && st.fetching) return st.fetching;
   st.season = s; st.DICT = null;
-  st.fetching = fetch(`/data/dict/s${pad(s)}.json`).then((r) => r.json()).then((j) => {
+  st.fetching = fetch(`${BASE}data/dict/s${pad(s)}.json`).then((r) => r.json()).then((j) => {
     if (st.season === s) st.DICT = j;
     if (tip.classList.contains("show") && st.word) { render(st.word); place(st.lastX, st.lastY); }
   }).finally(() => { if (st.season === s) st.fetching = null; });
@@ -98,7 +99,7 @@ function render(w) {
     ${st.complex && defLines.length ? `<div class="en">${esc(defLines.join("\n"))}</div>` : ""}
     ${st.complex && forms.length ? `<div class="sec"><div class="sh">WORD&nbsp;FORMS&nbsp;·&nbsp;变形</div><div class="forms">${forms.map((f) => `<span class="fchip" data-lw="${esc(f.v)}"><i>${EX_LABEL[f.k]}</i>${esc(f.v)}</span>`).join("")}</div></div>` : ""}
     ${st.complex && (bnc || frq) ? `<div class="sec"><div class="sh">FREQUENCY&nbsp;·&nbsp;词频</div><div class="bars">${rankBar("BNC", bnc)}${rankBar("COCA", frq)}</div></div>` : ""}
-    ${st.complex ? `<div class="sec cross"><span class="cnt">本集出现 <b>${st.epCounts[w] || 1}</b> 次</span><a href="/search?q=${encodeURIComponent(w)}">在台词中搜索 →</a></div>` : ""}
+    ${st.complex ? `<div class="sec cross"><span class="cnt">本集出现 <b>${st.epCounts[w] || 1}</b> 次</span><a href="${BASE}search?q=${encodeURIComponent(w)}">在台词中搜索 →</a></div>` : ""}
     <button class="expand">${st.complex ? "收起 ▴" : "展开全部 ▾"}</button>`;
   tip.querySelector(".x").addEventListener("click", hide);
   tip.querySelector(".expand").addEventListener("click", () => {

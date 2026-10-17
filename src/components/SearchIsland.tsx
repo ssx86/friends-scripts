@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { Index as FlexIndex } from "flexsearch";
 
+const BASE = import.meta.env.BASE_URL || "/";
 const SIX = ["Monica", "Rachel", "Phoebe", "Ross", "Chandler", "Joey"];
 const SIX_RE = SIX.map((n) => [n, new RegExp(`(^|[^A-Za-z])${n}([^A-Za-z]|$)`, "i")]);
 function whoClass(w) {
@@ -16,13 +17,13 @@ async function ensureIndex(setMsg) {
   if (FLEX) return;
   if (!building) {
     building = (async () => {
-      const idx = await (await fetch("/data/index.json")).json();
+      const idx = await (await fetch(`${BASE}data/index.json`)).json();
       const seasons = [...new Set(idx.map((x) => x.s))].sort((a, b) => a - b);
       const docs = [];
       const flex = new FlexIndex({ tokenize: "forward", suggest: true, resolution: 9 });
       let id = 0;
       for (let n = 0; n < seasons.length; n++) {
-        const data = await (await fetch(`/data/s${pad(seasons[n])}.json`)).json();
+        const data = await (await fetch(`${BASE}data/s${pad(seasons[n])}.json`)).json();
         for (const ep of data.episodes) {
           for (const l of ep.lines) {
             if (l.w === undefined) continue;
@@ -77,7 +78,7 @@ export default function SearchIsland() {
       if (e.key === "ArrowUp") { e.preventDefault(); setActive((a) => Math.max(a - 1, 0)); }
       if (e.key === "Enter") {
         const h = hits[activeRef.current];
-        if (h) location.href = `/ep/s${pad(h.ep.s)}e${h.ep.e}/#L${h.l.idx}`;
+        if (h) location.href = `${BASE}ep/s${pad(h.ep.s)}e${h.ep.e}/#L${h.l.idx}`;
       }
     };
     addEventListener("keydown", onKey);
@@ -113,7 +114,7 @@ export default function SearchIsland() {
         const mid = at >= 0 ? h.l.t.slice(at, at + query.length) : h.l.t.split(/\s+/)[0];
         const after = at >= 0 ? h.l.t.slice(at + query.length, at + query.length + 70) : h.l.t.slice(0, 90);
         return (
-          <a class={`hit${i === active ? " on" : ""}`} key={`${h.ep.s}-${h.ep.e}-${h.l.idx}`} href={`/ep/s${pad(h.ep.s)}e${h.ep.e}/#L${h.l.idx}`}>
+          <a class={`hit${i === active ? " on" : ""}`} key={`${h.ep.s}-${h.ep.e}-${h.l.idx}`} href={`${BASE}ep/s${pad(h.ep.s)}e${h.ep.e}/#L${h.l.idx}`}>
             <div class="src">S{pad(h.ep.s)}·E{h.ep.e} — {h.ep.t}</div>
             <div class="txt"><span class={`who2 ${whoClass(h.l.w)}`}>{h.l.w}:</span> {at >= 0 ? "…" + before : ""}<mark>{mid}</mark>{after}…</div>
           </a>

@@ -15,11 +15,11 @@ const { title, desc = "老友记十季 228 集全台词：即打即搜（容错�
   <meta name="description" content={desc} />
   <meta name="theme-color" content="#faf6ef" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23c9722e'/%3E%3Cpath d='M20 34h18v8a8 8 0 0 1-8 8h-2a8 8 0 0 1-8-8z' fill='%23faf6ef'/%3E%3Cpath d='M38 36h4a5 5 0 0 1 0 10h-4' fill='none' stroke='%23faf6ef' stroke-width='3'/%3E%3Cpath d='M25 28c0-2 3-2 3-4M32 28c0-2 3-2 3-4' stroke='%23faf6ef' stroke-width='2.2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E" />
-  <script>
-    // 旧 SPA 链接兼容：#s1e12 / #s1e12-L41 → /ep/s01e12/#L41
+  <script define:vars={{ siteBase: import.meta.env.BASE_URL }}>
+    // 旧 SPA 链接兼容：#s1e12 / #s1e12-L41 → /friends-scripts/ep/s01e12/#L41
     (function () {
       var m = location.hash.match(/^#s(\d+)e([\w-]+)(?:-L(\d+))?$/);
-      if (m) location.replace("/ep/s" + String(+m[1]).padStart(2, "0") + "e" + m[2] + "/" + (m[3] ? "#L" + m[3] : ""));
+      if (m) location.replace(siteBase + "ep/s" + String(+m[1]).padStart(2, "0") + "e" + m[2] + "/" + (m[3] ? "#L" + m[3] : ""));
     })();
   </script>
 </head>

@@ -3,6 +3,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 export const pad = (n) => String(n).padStart(2, "0");
+export const BASE = import.meta.env.BASE_URL || "/";
 export const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 const SIX = ["Monica", "Rachel", "Phoebe", "Ross", "Chandler", "Joey"];
@@ -54,4 +55,4 @@ export function allEpisodes(root) {
   }
   return flat;
 }
-export const epUrl = (s, e) => `/ep/s${pad(s)}e${e}/`;
+export const epUrl = (s, e) => `${BASE}ep/s${pad(s)}e${e}/`;

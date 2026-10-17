@@ -19,7 +19,7 @@ const dialogues = eps.reduce((a, e) => a + e.lines.filter((l) => l.w !== undefin
 ---
 <Shell title="老友记台词库 · Friends Scripts">
   <div class="landing">
-    <div class="peephole"><img class="cover" src="/cover.jpg" alt="Friends" width="272" /></div>
+    <div class="peephole"><img class="cover" src={import.meta.env.BASE_URL + "cover.jpg"} alt="Friends" width="272" /></div>
     <h1>老友记 · 台词库<small>TEN SEASONS · ALL LINES</small></h1>
     <div class="stats">
       <div class="stat"><b>228</b><span>EPISODES</span></div>

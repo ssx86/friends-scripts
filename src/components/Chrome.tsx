@@ -4,9 +4,10 @@ import { tipInit, tipHandlers, onSeason, toggleDict, dictOn, applyThemeBtn, adju
 
 const pad = (n) => String(n).padStart(2, "0");
 const DOTS = ["#e0603c", "#4d8a5a", "#c9722e", "#7d64ad", "#3e7ca6", "#b0483f", "#5a8a3e", "#94639c", "#3f7f8a", "#a8683a"];
-const epPath = (s, e) => `/ep/s${pad(s)}e${e}/`;
+const BASE = import.meta.env.BASE_URL;
+const epPath = (s, e) => `${BASE}ep/s${pad(s)}e${e}/`;
 function parsePath() {
-  const m = location.pathname.match(/^\/ep\/s(\d{2})e([\w-]+)\/?$/);
+  const m = location.pathname.slice(BASE.length - 1).match(/^\/ep\/s(\d{2})e([\w-]+)\/?$/);
   return m ? { s: +m[1], e: m[2] } : null;
 }
 
@@ -38,7 +39,7 @@ export default function Chrome() {
     tipHandlers();
     const s = +(document.body.dataset.season || 0);
     if (s) onSeason(s);
-    fetch(`/data/index.json`).then((r) => r.json()).then((idx) => {
+    fetch(`${BASE}data/index.json`).then((r) => r.json()).then((idx) => {
       buildSidebar(idx);
       window.__fsIndex = idx;
     });
@@ -61,11 +62,11 @@ export default function Chrome() {
   useEffect(() => {
     const t = setTimeout(() => {
       if (q.trim().length < 2) return;
-      if (location.pathname.startsWith("/search")) {
+      if (location.pathname.startsWith(BASE + "search")) {
         dispatchEvent(new CustomEvent("fs:q", { detail: q }));
-        history.replaceState(null, "", "/search?q=" + encodeURIComponent(q));
+        history.replaceState(null, "", BASE + "search?q=" + encodeURIComponent(q));
       } else {
-        location.href = "/search?q=" + encodeURIComponent(q);
+        location.href = BASE + "search?q=" + encodeURIComponent(q);
       }
     }, 320);
     return () => clearTimeout(t);
@@ -74,7 +75,7 @@ export default function Chrome() {
   return (
     <div class="topbar">
       <button class="sidebar-toggle" id="sb-toggle" aria-label="剧集列表" data-sidebar-toggle>☰</button>
-      <a class="brand" href="/">
+      <a class="brand" href={BASE}>
         <svg class="cup" viewBox="0 0 64 64" fill="none">
           <path d="M18 30h22v10a10 10 0 0 1-10 10h-2a10 10 0 0 1-10-10z" fill="currentColor" />
           <path d="M40 32h4.5a5.5 5.5 0 0 1 0 11H40" stroke="currentColor" stroke-width="3.5" />
@@ -89,7 +90,7 @@ export default function Chrome() {
         <span class="shint">/</span>
       </div>
       <div class="tools">
-        <a class="tbtn" id="vocab-btn" href="/vocab/" title="单词表">词表</a>
+        <a class="tbtn" id="vocab-btn" href={BASE + "vocab/"} title="单词表">词表</a>
         <button class={`tbtn${dictOn() ? " on" : ""}`} id="dict-toggle" title="悬浮查词开关" onClick={(e) => toggleDict(e.currentTarget)}>{dictOn() ? "词 ON" : "词 OFF"}</button>
         <button class="tbtn" id="fz-dec" onClick={() => adjustFz(-0.08)}>A-</button>
         <button class="tbtn" id="fz-inc" onClick={() => adjustFz(0.08)}>A+</button>

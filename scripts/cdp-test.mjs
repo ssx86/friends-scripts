@@ -7,7 +7,7 @@ import { join } from "node:path";
 
 const CHROME = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 const PORT = 9333;
-const BASE = "http://localhost:4321";
+const BASE = "http://localhost:4321/friends-scripts";
 
 const proc = spawn(CHROME, [
   "--headless=new", `--remote-debugging-port=${PORT}`,

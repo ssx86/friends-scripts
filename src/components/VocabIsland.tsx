@@ -6,6 +6,7 @@ const LVL_META = {
   cet4: ["CET-4", "var(--c-chandler)"], toefl: ["TOEFL", "var(--door)"], gre: ["GRE", "var(--c-ross)"],
   common: ["常用", "var(--faint)"],
 };
+const BASE = import.meta.env.BASE_URL || "/";
 const pad = (n) => String(n).padStart(2, "0");
 
 const SIX = ["Monica", "Rachel", "Phoebe", "Ross", "Chandler", "Joey"];
@@ -19,11 +20,11 @@ function whoClass(w) {
 let corpusCache = null;
 async function ensureCorpus(setMsg) {
   if (corpusCache) return corpusCache;
-  const idx = await (await fetch("/data/index.json")).json();
+  const idx = await (await fetch(`${BASE}data/index.json`)).json();
   const seasons = [...new Set(idx.map((x) => x.s))].sort((a, b) => a - b);
   const parts = [];
   for (let n = 0; n < seasons.length; n++) {
-    const data = await (await fetch(`/data/s${pad(seasons[n])}.json`)).json();
+    const data = await (await fetch(`${BASE}data/s${pad(seasons[n])}.json`)).json();
     for (const ep of data.episodes) {
       parts.push({ s: ep.s, e: ep.e, t: ep.t, lines: ep.lines.filter((l) => l.w !== undefined).map((l) => ({ idx: ep.lines.indexOf(l), w: l.w, t: typeof l.p === "string" ? l.p : l.p.map((p) => p[0]).join(" ") })) });
     }
@@ -36,14 +37,14 @@ async function ensureCorpus(setMsg) {
 export default function VocabIsland() {
   const [vocab, setVocab] = useState(null);
   const [w, setW] = useState(new URLSearchParams(location.search).get("w") || "");
-  useEffect(() => { fetch("/data/vocab.json").then((r) => r.json()).then(setVocab); }, []);
+  useEffect(() => { fetch(`${BASE}data/vocab.json`).then((r) => r.json()).then(setVocab); }, []);
   useEffect(() => {
     const onPop = () => setW(new URLSearchParams(location.search).get("w") || "");
     addEventListener("popstate", onPop);
     return () => removeEventListener("popstate", onPop);
   }, []);
   if (!vocab) return <div class="vocab"><div class="vsub">词表载入中…</div></div>;
-  return w ? <Drill w={w} vocab={vocab} onBack={() => { setW(""); history.replaceState(null, "", "/vocab/"); }} /> : <List vocab={vocab} onPick={(word) => { setW(word); history.replaceState(null, "", "/vocab/?w=" + encodeURIComponent(word)); }} />;
+  return w ? <Drill w={w} vocab={vocab} onBack={() => { setW(""); history.replaceState(null, "", `${BASE}vocab/`); }} /> : <List vocab={vocab} onPick={(word) => { setW(word); history.replaceState(null, "", `${BASE}vocab/?w=` + encodeURIComponent(word)); }} />;
 }
 
 function List({ vocab, onPick }) {
@@ -122,7 +123,7 @@ function Drill({ w, vocab, onBack }) {
         const mid = at >= 0 ? l.t.slice(at, at + w.length) : l.w;
         const after = at >= 0 ? l.t.slice(at + w.length, at + w.length + 64) : l.t.slice(0, 88);
         return (
-          <a class="occ" key={`${ep.s}-${ep.e}-${l.idx}`} href={`/ep/s${pad(ep.s)}e${ep.e}/#L${l.idx}`}>
+          <a class="occ" key={`${ep.s}-${ep.e}-${l.idx}`} href={`${BASE}ep/s${pad(ep.s)}e${ep.e}/#L${l.idx}`}>
             <div class="src">S{pad(ep.s)}·E{ep.e} — {ep.t} · 第 {l.idx + 1} 句</div>
             <div class="txt"><span class={`who2 ${whoClass(l.w)}`}>{l.w}:</span> {at >= 0 ? "…" + before : ""}<mark>{mid}</mark>{after}…</div>
           </a>
