@@ -106,10 +106,18 @@ check("MOnica 类拼写变体匹配（模糊规则在位）", await evalJs(`type
 const wrapCount = await evalJs("document.querySelectorAll('.ln .w').length");
 check("单词包裹", wrapCount > 2000, `${wrapCount} 个`);
 
+async function waitForTip(ms = 8000) {
+  for (let i = 0; i < Math.ceil(ms / 700); i++) {
+    await sleep(700);
+    const ok = await evalJs(`(()=>{const t=document.getElementById('tip');return t.classList.contains('show') && t.textContent.trim().length>30})()`);
+    if (ok) return true;
+  }
+  return false;
+}
+
 /* ── 3. 悬浮面板：简单模式 ── */
 await evalJs(`(()=>{const w=[...document.querySelectorAll('.ln .w')].find(e=>e.dataset.w==='lasagna');const r=w.getBoundingClientRect();w.dispatchEvent(new MouseEvent('mouseover',{bubbles:true,clientX:r.left+30,clientY:r.top+5}));return w.dataset.w;})()`);
-await sleep(2500); // 等本季词库
-const tipShown = await evalJs("document.getElementById('tip').classList.contains('show')");
+const tipShown = await waitForTip();
 check("面板显示（词库随页预取）", tipShown);
 const tipText = await evalJs("document.getElementById('tip').textContent.replace(/\\s+/g,' ').slice(0,120)");
 console.log("      面板内容:", tipText);
@@ -134,8 +142,8 @@ check("S10E1 人名高亮", colored10 > 200, `${colored10} 个`);
 const wrap10 = await evalJs("document.querySelectorAll('.ln .w').length");
 check("S10E1 单词识别", wrap10 > 2000, `${wrap10} 个`);
 await evalJs(`(()=>{const w=[...document.querySelectorAll('.ln .w')].find(e=>e.dataset.w==='pregnant')||[...document.querySelectorAll('.ln .w')].find(e=>e.dataset.w==='crushed');const r=w.getBoundingClientRect();w.dispatchEvent(new MouseEvent('mouseover',{bubbles:true,clientX:r.left+30,clientY:r.top+5}));return w.dataset.w;})()`);
-await sleep(2500);
-check("S10E1 悬浮查词", await evalJs("document.getElementById('tip').classList.contains('show')"));
+const ok10 = await waitForTip();
+check("S10E1 悬浮查词", ok10);
 await evalJs(`(()=>{const w=[...document.querySelectorAll('.ln .w')].find(e=>/^(you|get|know)$/.test(e.dataset.w));if(!w) return 'noword';const r=w.getBoundingClientRect();w.dispatchEvent(new MouseEvent('mouseover',{bubbles:true,clientX:r.left+30,clientY:r.top+5}));return 'ok';})()`);
 await sleep(600);
 const chipText = await evalJs("document.getElementById('tip').textContent");

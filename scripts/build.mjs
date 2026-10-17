@@ -96,7 +96,7 @@ function parseBody(htmlRaw) {
     const text = decode(chunk.replace(/<[^>]+>/g, "")).replace(/\s+/g, " ").trim();
     if (!text) continue;
 
-    if (/^\[Scene:/i.test(text)) { lines.push({ k: "scene", t: text }); continue; }
+    if (/^\[Scene:/i.test(text)) { lines.push({ t: text }); continue; }   // t 且 [Scene 前缀 = 场景
 
     const m = chunk.match(SPEAKER_RE);
     if (m) {
@@ -104,7 +104,10 @@ function parseBody(htmlRaw) {
       if (who === who.toUpperCase() && /[A-Z]{2}/.test(who)) {
         who = who.replace(/[A-Z]+/g, (w) => w[0] + w.slice(1).toLowerCase()); // RACHEL → Rachel
       }
-      lines.push({ k: "line", w: who, p: tokenize(m[2]) });
+      const parts = tokenize(m[2]);
+      // 无未删续片段的单段台词直接存字符串；行 = {w,p}，省掉 "k" 类型键
+      const p = parts.length === 1 && !parts[0][1] ? parts[0][0] : parts;
+      lines.push({ w: who, p });
       continue;
     }
     // 纯文本说话人（S2 风格：RACHEL: ...，无任何标签）
@@ -115,7 +118,7 @@ function parseBody(htmlRaw) {
       lines.push({ k: "line", w: who, p: [[pm[2].trim()]] });
       continue;
     }
-    if (text.length > 1) lines.push({ k: "note", t: text });
+    if (text.length > 1) lines.push({ t: text });   // t 无 [Scene 前缀 = 注释
   }
   return lines;
 }
@@ -161,9 +164,9 @@ for (const [s, eps] of [...bySeason.entries()].sort((a, b) => a[0] - b[0])) {
   totalEps += eps.length;
   for (const ep of eps) {
     index.push({ s: ep.s, e: ep.e, t: ep.t });
-    totalLines += ep.lines.filter((l) => l.k === "line").length;
+    totalLines += ep.lines.filter((l) => l.w !== undefined).length;
     for (const l of ep.lines) {
-      const text = l.k === "line" ? l.p.map((p) => p[0]).join("") : l.t;
+      const text = l.w !== undefined ? (typeof l.p === "string" ? l.p : l.p.map((p) => p[0]).join("")) : l.t;
       totalWords += (text.match(/[A-Za-z]+/g) || []).length;
     }
   }

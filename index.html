@@ -333,7 +333,7 @@
   }
 
   let INDEX = [], flat = [];
-  const DATA_V = "v4";   // 数据版本号：数据重建后递增，防止 CDN/浏览器旧缓存
+  const DATA_V = "v5";   // 数据版本号：数据重建后递增，防止 CDN/浏览器旧缓存
   const seasonCache = new Map();
   let current = -1;
   let epWordCount = {};          // 当前集词频（面板交叉信息）
@@ -411,15 +411,19 @@
   function renderScript(ep) {
     epWordCount = {};
     return ep.lines.map((l, idx) => {
-      if (l.k === "scene") return `<p class="ln scene" data-i="${idx}">${esc(l.t)}</p>`;
-      if (l.k === "note") return `<p class="ln note" data-i="${idx}">${esc(l.t)}</p>`;
+      const isLine = l.w !== undefined;   // {w,p}=台词；{t}=场景/注释（[Scene 前缀分界）
+      if (!isLine) {
+        const cls = /^\[Scene/i.test(l.t) ? "scene" : "note";
+        return `<p class="ln ${cls}" data-i="${idx}">${esc(l.t)}</p>`;
+      }
       const who = `<span class="who ${whoClass(l.w)}">${esc(l.w)}:</span> `;
-      const body = l.p.map((seg) => {
-        const raw = seg[0];
-        for (const m of raw.matchAll(WRE)) epWordCount[m[0].toLowerCase()] = (epWordCount[m[0].toLowerCase()] || 0) + 1;
-        const html = seg[1] ? `<span class="u">${wordify(raw)}</span>` : wordify(raw);
-        return html;
-      }).join(" ");
+      const body = typeof l.p === "string"
+        ? (() => { for (const m of l.p.matchAll(WRE)) epWordCount[m[0].toLowerCase()] = (epWordCount[m[0].toLowerCase()] || 0) + 1; return wordify(l.p); })()
+        : l.p.map((seg) => {
+            const raw = seg[0];
+            for (const m of raw.matchAll(WRE)) epWordCount[m[0].toLowerCase()] = (epWordCount[m[0].toLowerCase()] || 0) + 1;
+            return seg[1] ? `<span class="u">${wordify(raw)}</span>` : wordify(raw);
+          }).join(" ");
       return `<p class="ln" data-i="${idx}">${who}${body}</p>`;
     }).join("\n");
   }
@@ -452,7 +456,11 @@
     history.replaceState(null, "", "#" + epKey(it));
     scrollTo({ top: 0 });
     hideTip();
-    prefetchDict(it.s);   // 本集词库随页面预取（约 1.4MB，仅当前季）
+    {   // 词库预取延后 2.5s：先让剧集 JSON 独占带宽；期间悬停会按需即时加载
+      resetDictSeason(it.s);
+      const si = it.s;
+      setTimeout(() => { if (flat[current] && flat[current].s === si) prefetchDict(si); }, 2500);
+    }
     if (focusLine != null) {
       const el = main.querySelector(`.ln[data-i="${focusLine}"]`);
       if (el) { el.scrollIntoView({ block: "center" }); el.classList.add("flash"); }
@@ -470,10 +478,13 @@
       for (const ep of data.episodes) {
         corpus.push({
           s: ep.s, e: ep.e, t: ep.t,
-          lines: ep.lines.map((l, idx) => ({
-            idx, k: l.k, w: l.w || "",
-            t: l.k === "line" ? l.p.map((p) => p[0]).join(" ") : l.t,
-          })),
+          lines: ep.lines
+            .filter((l) => l.w !== undefined)
+            .map((l, idx0) => {
+              // 重新编号：corpus 的 idx 必须与 renderScript 的 data-i 对齐（全行序）
+              const idx = ep.lines.indexOf(l);
+              return { idx, k: "line", w: l.w, t: typeof l.p === "string" ? l.p : l.p.map((p) => p[0]).join(" ") };
+            }),
         });
       }
       progress && progress(n + 1, seasons.length);
@@ -568,14 +579,18 @@
     applyDict();
   });
 
+  function resetDictSeason(s) {
+    if (dictSeason !== s) { dictSeason = s; DICT = null; dictFetching = null; }
+  }
+
   async function prefetchDict(s) {
     if (dictSeason === s && DICT) return;
     if (dictSeason === s && dictFetching) return dictFetching;
     dictSeason = s; DICT = null;
     dictFetching = fetch(`data/dict/s${pad(s)}.json?v=${DATA_V}`).then((r) => r.json()).then((j) => {
-      DICT = j;
-      if (tip.classList.contains("show") && tipWord) renderTip(tipWord);
-    }).finally(() => { dictFetching = null; });
+      if (dictSeason === s) DICT = j;   // 期间又切了季则丢弃，防止旧数据覆盖
+      if (tip.classList.contains("show") && tipWord) { renderTip(tipWord); placeTip(lastTipX, lastTipY); }
+    }).finally(() => { if (dictSeason === s) dictFetching = null; });
     return dictFetching;
   }
 
@@ -617,7 +632,7 @@
       return { k: p.slice(0, c), v: p.slice(c + 1) };
     }).filter((f) => f && EX_LABEL[f.k]);
 
-    tip.className = tipComplex ? "complex" : "";
+    tip.classList.toggle("complex", tipComplex);   // 保留 .show，只切换复杂模式
     tip.innerHTML = `
       <button class="x" title="收起">✕</button>
       <div class="tw"><b>${esc(tipWordDisplay)}</b>${ph ? `<span class="ph">/${esc(ph)}/</span>` : ""}</div>
@@ -669,6 +684,7 @@
   }
 
   function placeTip(x, y) {
+    lastTipX = x; lastTipY = y;
     tip.classList.add("show");
     const r = tip.getBoundingClientRect();
     let tx = x + 16, ty = y + 18;
@@ -677,6 +693,7 @@
     tip.style.left = Math.max(10, tx) + "px";
     tip.style.top = ty + "px";
   }
+  let lastTipX = 0, lastTipY = 0;
   function hideTip() { clearTimeout(hideTimer); tip.classList.remove("show"); tipComplex = false; }
   function queueHide() { clearTimeout(hideTimer); hideTimer = setTimeout(hideTip, 260); }
 

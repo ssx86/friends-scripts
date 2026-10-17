@@ -13,8 +13,8 @@ for (const f of readdirSync(join(ROOT, "data"))) {
   const seasons = JSON.parse(readFileSync(join(ROOT, "data", f), "utf8"));
   for (const ep of seasons.episodes) {
     for (const l of ep.lines) {
-      if (l.k !== "line") continue;
-      const text = l.p.map((p) => p[0]).join(" ");
+      if (l.w === undefined) continue;   // 只统计台词
+      const text = typeof l.p === "string" ? l.p : l.p.map((p) => p[0]).join(" ");
       for (const m of text.matchAll(/[A-Za-z][A-Za-z'-]*/g)) {
         const w = m[0].toLowerCase();
         counts.set(w, (counts.get(w) || 0) + 1);
